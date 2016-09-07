@@ -1,11 +1,12 @@
 # TODO: move all communication handling in this file/class
 import serial
 import time
+import re
 
 class Capture:
 	def __init__(self, values):
 		# Capture is an array of values
-		capture = self.values
+		self.values = values
 
 
 def recv(port):
@@ -34,10 +35,11 @@ def send_cmd(port, cmd):
 		if ser.is_open:
 			print('open!')
 			ser.write(cmd.encode())
-			time.sleep(2)
+			time.sleep(5)
 			recv = ""
 			while ser.inWaiting() > 0:
 				recv += ser.read().decode("utf-8")
+			#print(recv)
 			ser.close()
 			return recv
 
@@ -50,11 +52,16 @@ def send_cmd(port, cmd):
 			print(e)
 
 def capture_voltage(port, time):
-	voltage_cmd = 'v%'
+	voltage_cmd = 'v%%'
 	cmd=""
 	for i in range(0, time):
 		cmd += voltage_cmd
 	values = send_cmd(port, cmd)
-	e = capture(values)
+	#print(values)
+	regexified = re.findall('^(GND.+)$', values, re.MULTILINE)
+	for val in regexified:
+		if val.endswith('L\t\r') or val.endswith('H\t\r'):
+			print(val)
+	e = Capture(values)
 if __name__ is '__main__':
 	capture_voltage(10)

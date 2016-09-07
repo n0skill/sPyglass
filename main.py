@@ -9,6 +9,6 @@ def main():
 	port 	= sys.argv[1]
 	cmd 	= sys.argv[2]
 	#busPirate.send_cmd(port, '\r')
-	data = busPirate.capture_voltage(port, 4)
+	data = busPirate.capture_voltage(port, 80)
 	#data = busPirate.send_cmd(port, cmd)
 main()

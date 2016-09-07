@@ -11,7 +11,7 @@ def send_cmd(port, cmd):
 	print('Sending cmd: ' + str(cmd) + ' to ' + str(port))
 	cmd = cmd+'\r' # Carriage return to execute command
 	try:
-		ser	= serial.Serial(port, 115200, timeout=5)
+		ser	= serial.Serial(port, 115200, timeout=30)
 		time.sleep(1)
 		if ser.is_open:
 			print('open!')

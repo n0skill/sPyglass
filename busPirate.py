@@ -1,6 +1,13 @@
 # TODO: move all communication handling in this file/class
 import serial
 import time
+
+class Capture:
+	def __init__(self, values):
+		# Capture is an array of values
+		capture = self.values
+
+
 def recv(port):
 	try:
 		ser	= serial.Serial(port, 115200, timeout=5)
@@ -31,8 +38,9 @@ def send_cmd(port, cmd):
 			recv = ""
 			while ser.inWaiting() > 0:
 				recv += ser.read().decode("utf-8")
-			print(recv)
 			ser.close()
+			return recv
+
 	except serial.SerialException as e:
 		if e.errno == 2:
 			print('Could not find device. Check spelling.')
@@ -46,6 +54,7 @@ def capture_voltage(port, time):
 	cmd=""
 	for i in range(0, time):
 		cmd += voltage_cmd
-	send_cmd(port, cmd)
+	values = send_cmd(port, cmd)
+	e = capture(values)
 if __name__ is '__main__':
 	capture_voltage(10)

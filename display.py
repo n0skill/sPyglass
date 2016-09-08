@@ -8,11 +8,11 @@ def disp(data):
 	brown	= (125, 125, 50)
 	orang	= (250, 255, 0)
 	red		= (255, 0, 0)
-	tickl 	= 60
+	tickl 	= 100
 	tickn 	= 0
 	x_ofs	= 300
 	y_ofs	= 100
-	am_coef = 40
+	am_coef = 120
 
 	screen.fill(black)
 	pygame.display.update()

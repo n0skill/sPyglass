@@ -11,13 +11,13 @@ def send_cmd(port, cmd_lst):
 	print('Sending cmds: ' + str(cmd_lst) + ' to ' + str(port))
 	try:
 		ser	= serial.Serial(port, 115200, timeout=3)
-		time.sleep(1)
+		time.sleep(0.1)
 		if ser.is_open:
 			print('open!')
 			for cmd in cmd_lst:
 				cmd = cmd+'\n'
 				ser.write(cmd.encode())
-				time.sleep(1)
+				time.sleep(0.2) # Do not monopolize CPU in order to recieve data
 			recv = ""
 			while ser.inWaiting() > 0:
 				recv += ser.read(256).decode("utf-8")
@@ -45,7 +45,6 @@ def capture_voltage(port, time):
 			volts += voltage_cmd
 		cmds = [mode, w, psu, volts]
 		values = send_cmd(port, cmds)
-		print(values)
 		clean = re.findall('^(GND.+)$', values, re.MULTILINE)
 		for val in clean:
 			if val.endswith('L\t\r') or val.endswith('H\t\r'):

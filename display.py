@@ -8,11 +8,11 @@ def disp(data):
 	brown	= (125, 125, 50)
 	orang	= (250, 255, 0)
 	red		= (255, 0, 0)
-	tickl 	= 40
+	tickl 	= 60
 	tickn 	= 0
-	x_ofs	= 500
+	x_ofs	= 300
 	y_ofs	= 100
-	am_coef = 20
+	am_coef = 40
 
 	screen.fill(black)
 	pygame.display.update()
@@ -31,10 +31,10 @@ def disp(data):
 		ch3.append((tickl*tickn + x_ofs, am_coef*float(capture_slice['OR'])+y_ofs+60))
 		tickn = tickn + 1
 	print(ch0)
-	pygame.draw.lines(screen, brown, True, ch0, 2)
-	pygame.draw.lines(screen, red, True, ch1, 2)
-	pygame.draw.lines(screen, yello, True, ch2, 2)
-	pygame.draw.lines(screen, orang, True, ch3, 2)
+	pygame.draw.lines(screen, brown, False, ch0, 2)
+	pygame.draw.lines(screen, red, False, ch1, 2)
+	pygame.draw.lines(screen, yello, False, ch2, 2)
+	pygame.draw.lines(screen, orang, False, ch3, 2)
 
 	while True:
 		pygame.display.update()

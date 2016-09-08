@@ -32,7 +32,7 @@ def send_cmd(port, cmd_lst):
 		else:
 			print(e)
 
-def capture_voltage(port, time):
+def capture_voltage(port='/dev/ttyUSB0', time=150):
 	mode = 'm'
 	w	 = '2'
 	psu	 = 'W'

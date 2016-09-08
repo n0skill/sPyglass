@@ -10,8 +10,7 @@ def main():
 	port 	= sys.argv[1]
 	cmd 	= sys.argv[2]
 	#busPirate.send_cmd(port, '\r')
-	capture = busPirate.capture_voltage(port, 100)
-	display.disp(capture)
+	display.disp()
 #	for key in data:
 #		print(data[key])
 	#display.graph(data)

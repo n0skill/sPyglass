@@ -66,4 +66,4 @@ def disp(data):
 	Channel(screen, ch3, Colors.orang)
 	while True:
 		pygame.display.update()
-		time.sleep(5)
+		time.sleep(2)

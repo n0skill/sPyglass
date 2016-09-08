@@ -10,17 +10,17 @@ class Capture:
 def send_cmd(port, cmd_lst):
 	print('Sending cmds: ' + str(cmd_lst) + ' to ' + str(port))
 	try:
-		ser	= serial.Serial(port, 115200, timeout=3)
-		time.sleep(0.1)
+		ser	= serial.Serial(port, 115200, timeout=1)
+		recv = ""
+		time.sleep(0.5)
 		if ser.is_open:
-			print('open!')
 			for cmd in cmd_lst:
 				cmd = cmd+'\n'
 				ser.write(cmd.encode())
-				time.sleep(0.2) # Do not monopolize CPU in order to recieve data
-			recv = ""
+				time.sleep(0.01) # Do not monopolize CPU in order to recieve data
 			while ser.inWaiting() > 0:
-				recv += ser.read(256).decode("utf-8")
+				recv += ser.read(512).decode("utf-8")
+				time.sleep(0.01) # Do not monopolize CPU
 			ser.close()
 			return recv
 
@@ -48,13 +48,12 @@ def capture_voltage(port, time):
 		clean = re.findall('^(GND.+)$', values, re.MULTILINE)
 		for val in clean:
 			if val.endswith('L\t\r') or val.endswith('H\t\r'):
-
 				reg = re.findall('(\d+.\d+)', val)
 				print(reg[0], reg[1], reg[2], reg[3])
 				results = {'BR': reg[0], 'RD': reg[1], 'OR': reg[2], 'YW':reg[3]}
-				#for key in results:
-				#	print(results[key])
 				capt.append(results)
+
+		print('expected values: ' + str(time) + '. Got: ' + str(len(capt))) # FIXME issue 1
 		return capt
 	except Exception as e:
 		print(e)

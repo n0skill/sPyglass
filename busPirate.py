@@ -11,15 +11,15 @@ def send_cmd(port, cmd):
 	print('Sending cmd: ' + str(cmd) + ' to ' + str(port))
 	cmd = cmd+'\r' # Carriage return to execute command
 	try:
-		ser	= serial.Serial(port, 115200, timeout=30)
+		ser	= serial.Serial(port, 115200, timeout=3)
 		time.sleep(1)
 		if ser.is_open:
 			print('open!')
 			ser.write(cmd.encode())
-			time.sleep(20)
+			time.sleep(1)
 			recv = ""
 			while ser.inWaiting() > 0:
-				recv += ser.read().decode("utf-8")
+				recv += ser.read(256).decode("utf-8")
 			ser.close()
 			return recv
 
@@ -34,13 +34,23 @@ def send_cmd(port, cmd):
 def capture_voltage(port, time):
 	voltage_cmd = 'v%%'
 	cmd=""
-	for i in range(0, time):
-		cmd += voltage_cmd
-	values = send_cmd(port, cmd)
-	regexified = re.findall('^(GND.+)$', values, re.MULTILINE)
-	print(values)
-	print(regexified)
-	#	print(val)
-		# if val.endswith('L\t\r') or val.endswith('H\t\r'):
-		# 	print(val)
-	e = Capture(values)
+	capt = []
+	results = {}
+	try:
+		for i in range(0, time):
+			cmd += voltage_cmd
+		values = send_cmd(port, cmd)
+		clean = re.findall('^(GND.+)$', values, re.MULTILINE)
+		for val in clean:
+			if val.endswith('L\t\r') or val.endswith('H\t\r'):
+				# print(val)
+				reg = re.findall('(\d+.\d+)', val)
+				print(reg[0], reg[1], reg[2], reg[3])
+				results = {'BR': reg[0], 'RD': reg[1], 'OR': reg[2], 'YW':reg[3]}
+				#for key in results:
+				#	print(results[key])
+				capt.append(results)
+		return capt
+	except Exception as e:
+		print(e)
+		return None

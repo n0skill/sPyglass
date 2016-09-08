@@ -2,6 +2,7 @@ import serial
 import sys
 import time
 import busPirate
+import display
 import re
 
 
@@ -9,10 +10,11 @@ def main():
 	port 	= sys.argv[1]
 	cmd 	= sys.argv[2]
 	#busPirate.send_cmd(port, '\r')
-	data = busPirate.capture_voltage(port, 10)
-
-	data = busPirate.capture_voltage(port, 15)
-
-	data = busPirate.capture_voltage(port, 20)
+	capture = busPirate.capture_voltage(port, 40)
+	print(capture)
+	display.disp(capture)
+#	for key in data:
+#		print(data[key])
+	#display.graph(data)
 	#data = busPirate.send_cmd(port, cmd)
 main()

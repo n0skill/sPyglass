@@ -7,16 +7,17 @@ class Capture:
 	def __init__(self, values):
 		# Capture is an array of values
 		self.values = values
-def send_cmd(port, cmd):
-	print('Sending cmd: ' + str(cmd) + ' to ' + str(port))
-	cmd = cmd+'\r' # Carriage return to execute command
+def send_cmd(port, cmd_lst):
+	print('Sending cmds: ' + str(cmd_lst) + ' to ' + str(port))
 	try:
 		ser	= serial.Serial(port, 115200, timeout=3)
 		time.sleep(1)
 		if ser.is_open:
 			print('open!')
-			ser.write(cmd.encode())
-			time.sleep(1)
+			for cmd in cmd_lst:
+				cmd = cmd+'\n'
+				ser.write(cmd.encode())
+				time.sleep(1)
 			recv = ""
 			while ser.inWaiting() > 0:
 				recv += ser.read(256).decode("utf-8")
@@ -32,18 +33,23 @@ def send_cmd(port, cmd):
 			print(e)
 
 def capture_voltage(port, time):
-	voltage_cmd = 'v%%'
-	cmd=""
+	mode = 'm'
+	w	 = '2'
+	psu	 = 'W'
+	voltage_cmd = 'v%'
+	volts = ''
 	capt = []
 	results = {}
 	try:
 		for i in range(0, time):
-			cmd += voltage_cmd
-		values = send_cmd(port, cmd)
+			volts += voltage_cmd
+		cmds = [mode, w, psu, volts]
+		values = send_cmd(port, cmds)
+		print(values)
 		clean = re.findall('^(GND.+)$', values, re.MULTILINE)
 		for val in clean:
 			if val.endswith('L\t\r') or val.endswith('H\t\r'):
-				# print(val)
+
 				reg = re.findall('(\d+.\d+)', val)
 				print(reg[0], reg[1], reg[2], reg[3])
 				results = {'BR': reg[0], 'RD': reg[1], 'OR': reg[2], 'YW':reg[3]}

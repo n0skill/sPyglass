@@ -11,8 +11,8 @@ def disp(data):
 	tickl 	= 100
 	tickn 	= 0
 	x_ofs	= 500
-	y_ofs	= 50
-	am_coef = 120
+	y_ofs	= 20
+	am_coef = 30
 
 	screen.fill(black)
 	pygame.display.update()
@@ -31,6 +31,17 @@ def disp(data):
 		ch3.append((tickl*tickn + x_ofs, am_coef*float(capture_slice['OR'])+y_ofs+60))
 		tickn = tickn + 1
 	print(ch0)
+	pygame.font.init()
+	font = pygame.font.Font(None, 18)
+	lab1 = font.render("ch1", 1, brown)
+	lab2 = font.render("ch2", 1, red)
+	lab3 = font.render("ch3", 1, yello)
+	lab4 = font.render("ch4", 1, orang)
+	screen.blit(lab1, (x_ofs-30, 100))
+	screen.blit(lab2, (x_ofs-30, 120))
+	screen.blit(lab3, (x_ofs-30, 140))
+	screen.blit(lab4, (x_ofs-30, 160))
+
 	pygame.draw.lines(screen, brown, False, ch0, 2)
 	pygame.draw.lines(screen, red, False, ch1, 2)
 	pygame.draw.lines(screen, yello, False, ch2, 2)

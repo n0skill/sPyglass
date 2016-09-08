@@ -10,8 +10,8 @@ def disp(data):
 	red		= (255, 0, 0)
 	tickl 	= 100
 	tickn 	= 0
-	x_ofs	= 300
-	y_ofs	= 100
+	x_ofs	= 500
+	y_ofs	= 50
 	am_coef = 120
 
 	screen.fill(black)

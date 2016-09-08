@@ -53,7 +53,7 @@ def capture_voltage(port='/dev/ttyUSB0', time=150):
 				results = {'BR': reg[0], 'RD': reg[1], 'OR': reg[2], 'YW':reg[3]}
 				capt.append(results)
 
-		print('expected values: ' + str(time) + '. Got: ' + str(len(capt))) # FIXME issue 1
+		print('expected values: ' + str(time) + '. Got: ' + str(len(capt)))
 		return capt
 	except Exception as e:
 		print(e)

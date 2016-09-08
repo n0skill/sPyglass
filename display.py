@@ -26,7 +26,7 @@ class Channel:
 		cap_tuples = []
 
 		#Scale x axis
-		self.x_scale = (display.get_width()-50)/len(values)
+		self.x_scale = (display.get_width()-100)/len(values)
 		pygame.font.init()
 		font = pygame.font.Font(None, 18)
 		self.surface = pygame.Surface((display.get_width(), 80))
@@ -34,8 +34,9 @@ class Channel:
 		self.lab1 = font.render("ch"+str(Channel.nb), 1, self.color)
 		self.surface.blit(self.lab1, (10, Channel.height/2))
 		for id, val in enumerate(values):
-			cap_tuples.append((id*self.x_scale+40, val*10))
-		cap_tuples.append((len(values)*self.x_scale+40, val*10))
+			cap_tuples.append((id*self.x_scale+100, val*10))
+		cap_tuples.append((len(values)*self.x_scale+100, val*10))
+		# FIXME: invert line
 		pygame.draw.lines(self.surface, self.color, False, cap_tuples, 2)
 		display.blit(self.surface, (0, Channel.nb*Channel.height))
 		pygame.display.update()

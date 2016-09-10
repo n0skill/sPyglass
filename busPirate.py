@@ -39,11 +39,7 @@ def capture_voltage(port='/dev/ttyUSB0', time=180):
 	psu	 = 'W'
 	voltage_cmd = 'v%'
 	volts = ''
-	capt_lst = []
-	ch0_lst = []
-	ch1_lst = []
-	ch2_lst = []
-	ch3_lst = []
+	capt = []
 	results = {}
 	try:
 		for i in range(0, time):
@@ -55,14 +51,9 @@ def capture_voltage(port='/dev/ttyUSB0', time=180):
 			if val.endswith('L\t\r') or val.endswith('H\t\r'):
 				reg = re.findall('(\d+.\d+)', val)
 				results = {'BR': reg[0], 'RD': reg[1], 'OR': reg[2], 'YW':reg[3]}
-				capt_lst.append(results)
-		for id, capture_slice in enumerate(capt_lst):
-			ch0_lst.append((id, float(capture_slice['BR'])))
-			ch1_lst.append((id, float(capture_slice['RD'])))
-			ch2_lst.append((id, float(capture_slice['YW'])))
-			ch3_lst.append((id, float(capture_slice['OR'])))
-		print('expected values: ' + str(time) + '. Got: ' + str(len(capt)))
+				capt.append(results)
 
+		print('expected values: ' + str(time) + '. Got: ' + str(len(capt)))
 		return capt
 	except Exception as e:
 		print(e)

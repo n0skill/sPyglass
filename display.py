@@ -44,7 +44,7 @@ class Textbox:
 					cmd.append(self.text)
 					value = busPirate.send_cmd('/dev/ttyUSB0', cmd)
 					self.surface.fill(self.col)
-				if event.unicode == '\b':
+				elif event.unicode == '\b':
 					self.cur_x-=-20
 					self.surface.fill(self.col)
 					self.screen.blit(self.surface, (self.x_pos, self.y_pos))
@@ -226,7 +226,7 @@ def disp():
 	screen	= pygame.display.set_mode((1024,768))
 	screen.fill(Colors.black)
 	disp_default_chans(screen)
-	tb = Textbox("console", screen, screen.get_width(), 150, 10, 400)
+	tb = Textbox("console", screen, screen.get_width(), 250, 10, 400)
 	pygame.display.update()
 	while True:
 		evts = pygame.event.get()

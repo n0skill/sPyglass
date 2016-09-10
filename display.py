@@ -23,7 +23,7 @@ class Channel:
 	def __init__(self, display, values, color, unit):
 		self.margin_l = 100
 		self.length = len(values)
-		self.height = 90
+		self.height = 80
 		self.color = color
 		self.unit = unit
 		self.values = values
@@ -142,30 +142,17 @@ def disp_default_chans(screen):
 	pygame.display.update()
 
 def plot_capture(screen):
+	channels = Channel.channels
 	Channel.reset()
-	#Capture
-	vals_ch0 = []
-	vals_ch1 = []
-	vals_ch2 = []
-	vals_ch3 = []
-	capture = busPirate.capture_voltage()
+	capt = busPirate.capture_voltage()
 	surf = pygame.Surface((screen.get_width(), 50))
-
-	# Create a tuple list for each channel
-	for id, capture_slice in enumerate(capture):
-		vals_ch0.append((id, float(capture_slice['BR'])))
-		vals_ch1.append((id, float(capture_slice['RD'])))
-		vals_ch2.append((id, float(capture_slice['YW'])))
-		vals_ch3.append((id, float(capture_slice['OR'])))
-	# Plot them
-	Channel(screen, vals_ch0, Colors.brown,	"ms")
-	Channel(screen, vals_ch1, Colors.red, 	"ms")
-	Channel(screen, vals_ch2, Colors.yello,	"ms")
-	Channel(screen, vals_ch3, Colors.orang,	"ms")
+	for k, chan in enumerate(capt.channels):
+		color = channels[k].color
+		Channel(screen, capt.channels[chan], color, "ms")
 	Channel.plotall()
 
 def disp():
-	screen	= pygame.display.set_mode((1024,768))
+	screen	= pygame.display.set_mode((1024,800))
 	screen.fill(Colors.black)
 	disp_default_chans(screen)
 	pygame.display.update()

@@ -3,10 +3,19 @@ import serial
 import time
 import re
 
-class Capture:
-	def __init__(self, values, unit):
+class Captured:
+	def __init__(self, values):
 		# Capture is an array of values
 		self.values = values
+		self.channels = {'ch1': [], 'ch2': [], 'ch3': [], 'ch4': []}
+		for k, val in enumerate(self.values):
+			self.channels['ch1'].append((k, float(val['BR'])))
+			self.channels['ch2'].append((k, float(val['RD'])))
+			self.channels['ch3'].append((k, float(val['YW'])))
+			self.channels['ch4'].append((k, float(val['RD'])))
+	def print_all(self):
+		for i in self.channels:
+			print(self.channels[i])
 
 def send_cmd(port, cmd_lst):
 	print('Sending cmds: ' + str(cmd_lst) + ' to ' + str(port))
@@ -20,7 +29,7 @@ def send_cmd(port, cmd_lst):
 				ser.write(cmd.encode())
 				time.sleep(0.01) # Do not monopolize CPU in order to recieve data
 			while ser.inWaiting() > 0:
-				recv += ser.read(1024).decode("utf-8")
+				recv += ser.read(512).decode("utf-8")
 				time.sleep(0.01) # Do not monopolize CPU
 			ser.close()
 			return recv
@@ -33,13 +42,13 @@ def send_cmd(port, cmd_lst):
 		else:
 			print(e)
 
-def capture_voltage(port='/dev/ttyUSB0', time=180):
+def capture_voltage(port='/dev/ttyUSB0', time=100):
 	mode = 'm'
 	w	 = '2'
 	psu	 = 'W'
 	voltage_cmd = 'v%'
 	volts = ''
-	capt = []
+	capt_lst = []
 	results = {}
 	try:
 		for i in range(0, time):
@@ -51,10 +60,11 @@ def capture_voltage(port='/dev/ttyUSB0', time=180):
 			if val.endswith('L\t\r') or val.endswith('H\t\r'):
 				reg = re.findall('(\d+.\d+)', val)
 				results = {'BR': reg[0], 'RD': reg[1], 'OR': reg[2], 'YW':reg[3]}
-				capt.append(results)
-
-		print('expected values: ' + str(time) + '. Got: ' + str(len(capt)))
-		return capt
+				capt_lst.append(results)
+		zerg = Captured(capt_lst)
+		zerg.print_all()
+		#print('expected values: ' + str(time) + '. Got: ' + str(len(capt_lst)))
+		return zerg
 	except Exception as e:
 		print(e)
 		return None

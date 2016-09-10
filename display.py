@@ -76,17 +76,13 @@ class Channel:
 
 		labelmax = font.render(str(self.max), 1, self.color)
 		labelmin = font.render(str(self.min), 1, self.color)
-
 		self.lab1 = font.render("ch"+str(Channel.nb), 1, self.color)
 		self.surface.blit(self.lab1, (40, Channel.height/2))
-
 		self.timescale = font.render(str(self.length), 1, self.color)
 		self.surface.blit(self.timescale, (self.display.get_width()-20, 10))
-
 		self.surface.blit(labelmax, (self.margin_l, 10))
 		self.surface.blit(labelmin, (self.margin_l, 70))
 		self.display.blit(self.surface, (0, self.nb*self.height))
-
 		for tup in self.values:
 			x_scaled = tup[0]*self.x_scale*Channel.zoom_level
 			y_scaled = (tup[1]-self.min)/((self.max-self.min)+0.01)*self.height

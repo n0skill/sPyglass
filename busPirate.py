@@ -4,7 +4,7 @@ import time
 import re
 
 class Capture:
-	def __init__(self, values):
+	def __init__(self, values, unit):
 		# Capture is an array of values
 		self.values = values
 

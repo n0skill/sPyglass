@@ -2,6 +2,78 @@ import pygame
 import time
 import busPirate
 
+class Textbox:
+	def __init__(self, name, screen, w, h, x_pos, y_pos, backC=(20,20,20), foreC=(0,0,0)):
+		self.focused = False
+		self.h = h
+		self.w = w
+		self.x_pos = x_pos
+		self.y_pos = y_pos
+		self.cur_x = x_pos
+		self.cur_y = 20
+		self.col = backC
+		self.text = ""
+		self.ln_count = 1
+		self.screen = screen
+		self.surface = pygame.Surface((w,h))
+		self.surface.fill(backC)
+		pygame.font.init()
+		self.font = pygame.font.Font(None, 20)
+		screen.blit(self.surface, (x_pos, y_pos))
+
+	def action(self, events):
+		for event in events:
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				#(vars(event))
+				pos = event.pos
+				if event.button == 1:
+					if self.x_pos+self.w > pos[0] > self.x_pos and self.y_pos+self.h > pos[1] > self.y_pos:
+						self.focused=True
+						arrow = self.font.render('>', 1, Colors.green)
+						self.cur_x+=20
+						self.surface.blit(arrow, (self.cur_x, self.cur_y))
+					else:
+						self.focused=False
+			if event.type == pygame.KEYDOWN and self.focused is True:
+				cmd = []
+				value = ""
+				if event.unicode == '\r':
+					self.cur_y = self.ln_count*20
+					self.cur_x = 0
+					self.ln_count+=1
+					cmd.append(self.text)
+					value = busPirate.send_cmd('/dev/ttyUSB0', cmd)
+					self.surface.fill(self.col)
+				if event.unicode == '\b':
+					self.cur_x-=-20
+					self.surface.fill(self.col)
+					self.screen.blit(self.surface, (self.x_pos, self.y_pos))
+				else:
+					self.text += event.unicode
+					txt = self.font.render(event.unicode, 1, Colors.green)
+					self.cur_x+=20
+					self.surface.blit(txt, (self.cur_x,self.cur_y))
+
+				if len(value) > 0:
+					savex = self.cur_x
+					lines = value.split('\r\n')
+					for i in lines:
+						self.ln_count= self.ln_count+1
+						print(self.ln_count)
+						if self.ln_count > 20:
+							self.ln_count=0
+							self.cur_y=self.y_pos
+						else:
+							tabs = i.split('\t')
+							for tab in tabs:
+								label_l = self.font.render(tab, 1, Colors.green)
+								self.surface.blit(label_l, (self.cur_x, self.cur_y))
+								self.cur_x+=100
+							self.cur_x=savex
+							self.cur_y = self.ln_count*20
+			self.screen.blit(self.surface, (self.x_pos, self.y_pos))
+			pygame.display.update()
+
 class Colors:
 	black 	= (0,0,0)
 	white 	= (255, 255, 255)
@@ -95,7 +167,6 @@ def zoomIn():
 	Channel.zoom_level=Channel.zoom_level+0.3
 	for chan in Channel.channels:
 		chan.plot()
-	pygame.display.update()
 def zoomOut():
 	Channel.reset()
 	if Channel.zoom_level > 0.3:
@@ -104,7 +175,6 @@ def zoomOut():
 			chan.plot()
 	else:
 		pass
-	pygame.display.update()
 
 # Source: https://pythonprogramming.net/pygame-button-function-events/
 def button(evs, disp, x_pos, y_pos, w, h, text, arg, action=None):
@@ -118,6 +188,7 @@ def button(evs, disp, x_pos, y_pos, w, h, text, arg, action=None):
 					pygame.draw.rect(disp, Colors.yello,(x_pos,y_pos,w,h))
 					pygame.display.update()
 					action(arg)
+
 
 	pygame.font.init()
 	font = pygame.font.Font(None, 18)
@@ -155,10 +226,12 @@ def disp():
 	screen	= pygame.display.set_mode((1024,768))
 	screen.fill(Colors.black)
 	disp_default_chans(screen)
+	tb = Textbox("console", screen, screen.get_width(), 150, 10, 400)
 	pygame.display.update()
 	while True:
 		evts = pygame.event.get()
 		button(evts, screen, 60, 750, 120, 40, 'capture', screen, plot_capture)
+		tb.action(evts)
 		mouse_action_trigger(evts, 4, zoomIn)
 		mouse_action_trigger(evts, 5, zoomOut)
 		pygame.display.update()

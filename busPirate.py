@@ -7,6 +7,7 @@ class Capture:
 	def __init__(self, values):
 		# Capture is an array of values
 		self.values = values
+
 def send_cmd(port, cmd_lst):
 	print('Sending cmds: ' + str(cmd_lst) + ' to ' + str(port))
 	try:
@@ -32,7 +33,7 @@ def send_cmd(port, cmd_lst):
 		else:
 			print(e)
 
-def capture_voltage(port='/dev/ttyUSB0', time=80):
+def capture_voltage(port='/dev/ttyUSB0', time=120):
 	mode = 'm'
 	w	 = '2'
 	psu	 = 'W'
@@ -49,7 +50,6 @@ def capture_voltage(port='/dev/ttyUSB0', time=80):
 		for val in clean:
 			if val.endswith('L\t\r') or val.endswith('H\t\r'):
 				reg = re.findall('(\d+.\d+)', val)
-				print(reg[0], reg[1], reg[2], reg[3])
 				results = {'BR': reg[0], 'RD': reg[1], 'OR': reg[2], 'YW':reg[3]}
 				capt.append(results)
 

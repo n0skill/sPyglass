@@ -20,7 +20,7 @@ def send_cmd(port, cmd_lst):
 				ser.write(cmd.encode())
 				time.sleep(0.01) # Do not monopolize CPU in order to recieve data
 			while ser.inWaiting() > 0:
-				recv += ser.read(512).decode("utf-8")
+				recv += ser.read(1024).decode("utf-8")
 				time.sleep(0.01) # Do not monopolize CPU
 			ser.close()
 			return recv
@@ -33,7 +33,7 @@ def send_cmd(port, cmd_lst):
 		else:
 			print(e)
 
-def capture_voltage(port='/dev/ttyUSB0', time=120):
+def capture_voltage(port='/dev/ttyUSB0', time=180):
 	mode = 'm'
 	w	 = '2'
 	psu	 = 'W'

@@ -6,7 +6,7 @@ class Colors:
 	black 	= (0,0,0)
 	white 	= (255, 255, 255)
 	yello	= (255, 125, 0)
-	brown	= (100, 50, 30)
+	brown	= (170, 100, 50)
 	orang	= (250, 255, 0)
 	red		= (255, 0, 0)
 	grey	= (125, 125, 125)
@@ -91,23 +91,19 @@ class Channel:
 		Channel.nb = 0
 
 def zoomIn():
-	print('ZoOoOm')
 	Channel.reset()
 	Channel.zoom_level=Channel.zoom_level+0.3
 	for chan in Channel.channels:
-		print(chan.x_scale)
 		chan.plot()
 	pygame.display.update()
-
 def zoomOut():
-	print('uuuunZoOoOm')
 	Channel.reset()
 	if Channel.zoom_level > 0.3:
 		Channel.zoom_level=Channel.zoom_level-0.3
 		for chan in Channel.channels:
 			chan.plot()
 	else:
-		print('Cannot zoom less !')
+		pass
 	pygame.display.update()
 
 # Source: https://pythonprogramming.net/pygame-button-function-events/
@@ -134,7 +130,6 @@ def mouse_action_trigger(events, mouse_btn_no, action=None):
 	for evt in events:
 		if evt.type == pygame.MOUSEBUTTONDOWN:
 			if evt.button == mouse_btn_no:
-				print('triggeredd!')
 				action()
 
 def disp_default_chans(screen):
@@ -177,7 +172,7 @@ def disp():
 	while True:
 		evts = pygame.event.get()
 		button(evts, screen, 60, 750, 120, 40, 'capture', screen, plot_capture)
-		mouse_action_trigger(evts, 2, zoomIn)
-		mouse_action_trigger(evts, 3, zoomOut)
+		mouse_action_trigger(evts, 4, zoomIn)
+		mouse_action_trigger(evts, 5, zoomOut)
 		pygame.display.update()
 		time.sleep(0.01)

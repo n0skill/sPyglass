@@ -152,7 +152,7 @@ def plot_capture(screen):
 	Channel.plotall()
 
 def disp():
-	screen	= pygame.display.set_mode((1024,800))
+	screen	= pygame.display.set_mode((1024,768))
 	screen.fill(Colors.black)
 	disp_default_chans(screen)
 	pygame.display.update()

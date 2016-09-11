@@ -46,14 +46,14 @@ class Textbox:
 					self.surface.fill(self.col)
 				elif event.unicode == '\b':
 					self.text = self.text[:-1]
-					self.surface.fill(self.col)
-					self.screen.blit(self.surface, (self.x_pos, self.y_pos))
 				elif event.key < 207:
 					self.text += event.unicode
-					txt = self.font.render(self.text, 1, Colors.green)
-					self.surface.blit(txt, (self.cur_x,self.cur_y))
 				else:
 					print('cannot process ', event.key)
+				self.surface.fill(self.col)
+				txt = self.font.render(self.text, 1, Colors.green)
+				self.surface.blit(txt, (self.cur_x,self.cur_y))
+				self.screen.blit(self.surface, (self.x_pos, self.y_pos))
 
 				if len(value) > 0:
 					savex = self.cur_x

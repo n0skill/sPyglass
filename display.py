@@ -24,7 +24,6 @@ class Textbox:
 	def action(self, events):
 		for event in events:
 			if event.type == pygame.MOUSEBUTTONDOWN:
-				#(vars(event))
 				pos = event.pos
 				if event.button == 1:
 					if self.x_pos+self.w > pos[0] > self.x_pos and self.y_pos+self.h > pos[1] > self.y_pos:
@@ -37,20 +36,20 @@ class Textbox:
 				if event.key < 207:
 					print(event.unicode)
 					if event.unicode == '\r':
-						self.cur_y = self.ln_count*20
+						self.ln_count=1
 						self.cur_x = 20
-						self.ln_count+=1
 						cmd.append(self.in_text)
 						value = busPirate.send_cmd('/dev/ttyUSB0', cmd)
 						self.in_text=""
+						txt = self.font.render(self.in_text, 1, Colors.green)
+						self.surface.fill(self.col)
+						self.surface.blit(txt, (self.cur_x,self.cur_y))
+
 					elif event.unicode == '\b':
+						self.surface.fill(self.col)
 						self.in_text = self.in_text[:-1]
 					else:
 						self.in_text += event.unicode
-					self.surface.fill(self.col)
-					txt = self.font.render(self.in_text, 1, Colors.green)
-					self.surface.blit(txt, (self.cur_x,self.cur_y))
-					self.screen.blit(self.surface, (self.x_pos, self.y_pos))
 				else:
 					print('cannot process ', event.key)
 
@@ -67,6 +66,10 @@ class Textbox:
 							self.cur_y = self.ln_count*20
 						self.cur_x = savex
 				self.ln_count = 1
+				self.cur_y = self.ln_count*20
+			if len(self.in_text) > 0:
+				inp = self.font.render(self.in_text, 1, Colors.green)
+				self.surface.blit(inp, (self.cur_x, self.cur_y))
 			self.screen.blit(self.surface, (self.x_pos, self.y_pos))
 			pygame.display.update()
 

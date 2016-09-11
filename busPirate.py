@@ -16,7 +16,7 @@ class Captured:
 	def print_all(self):
 		for i in self.channels:
 			print(self.channels[i])
-4
+
 def isConnected(port='/dev/ttyUSB0'):
 	try:
 		ser = serial.Serial(port, 115200, timeout=1)
@@ -68,10 +68,9 @@ def capture_voltage(port='/dev/ttyUSB0', time=100):
 				reg = re.findall('(\d+.\d+)', val)
 				results = {'BR': reg[0], 'RD': reg[1], 'OR': reg[2], 'YW':reg[3]}
 				capt_lst.append(results)
-		zerg = Captured(capt_lst)
-		zerg.print_all()
-		#print('expected values: ' + str(time) + '. Got: ' + str(len(capt_lst)))
-		return zerg
+		captured_vals = Captured(capt_lst)
+		print('expected values: ' + str(time) + '. Got: ' + str(len(capt_lst)))
+		return captured_vals
 	except Exception as e:
 		print(e)
 		return None

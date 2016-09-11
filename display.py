@@ -12,7 +12,7 @@ class Textbox:
 		self.cur_x = x_pos
 		self.cur_y = 20
 		self.col = backC
-		self.text = ""
+		self.in_text = ""
 		self.ln_count = 1
 		self.screen = screen
 		self.surface = pygame.Surface((w,h))
@@ -36,23 +36,24 @@ class Textbox:
 				value = ""
 				if event.unicode == '\r':
 					self.cur_y = self.ln_count*20
-					self.cur_x = 0
+					self.cur_x = 20
 					self.ln_count+=1
-					cmd.append(self.text)
+					cmd.append(self.in_text)
 					value = busPirate.send_cmd('/dev/ttyUSB0', cmd)
+					self.in_text=""
 					self.surface.fill(self.col)
 				elif event.unicode == '\b':
-					self.text = self.text[:-1]
+					self.in_text = self.in_text[:-1]
 				elif event.key < 207:
-					self.text += event.unicode
+					self.in_text += event.unicode
 				else:
 					print('cannot process ', event.key)
 				self.surface.fill(self.col)
-				txt = self.font.render(self.text, 1, Colors.green)
+				txt = self.font.render(self.in_text, 1, Colors.green)
 				self.surface.blit(txt, (self.cur_x,self.cur_y))
 				self.screen.blit(self.surface, (self.x_pos, self.y_pos))
 
-				if len(value) > 0:
+				if len(value) > 1:
 					lines = value.split('\r\n')
 					savex = self.cur_x
 					for line in lines:
@@ -64,7 +65,7 @@ class Textbox:
 							self.surface.blit(label_l, (self.cur_x, self.cur_y))
 							self.cur_y = self.ln_count*20
 						self.cur_x = savex
-					self.ln_count = 0
+				self.ln_count = 1
 			self.screen.blit(self.surface, (self.x_pos, self.y_pos))
 			pygame.display.update()
 
@@ -216,16 +217,20 @@ def plot_capture(screen):
 	Channel.plotall()
 
 def disp():
+	connected = busPirate.isConnected()
 	screen	= pygame.display.set_mode((1024,768))
 	screen.fill(Colors.black)
 	disp_default_chans(screen)
-	tb = Textbox("console", screen, screen.get_width(), 250, 10, 400)
-	pygame.display.update()
-	while True:
-		evts = pygame.event.get()
-		button(evts, screen, 60, 750, 120, 40, 'capture', screen, plot_capture)
-		tb.action(evts)
-		mouse_action_trigger(evts, 4, zoomIn)
-		mouse_action_trigger(evts, 5, zoomOut)
+	if connected:
+		tb = Textbox("console", screen, screen.get_width(), 250, 10, 400)
 		pygame.display.update()
-		time.sleep(0.01)
+		while True:
+			evts = pygame.event.get()
+			button(evts, screen, 60, 750, 120, 40, 'capture', screen, plot_capture)
+			tb.action(evts)
+			mouse_action_trigger(evts, 4, zoomIn)
+			mouse_action_trigger(evts, 5, zoomOut)
+			pygame.display.update()
+			time.sleep(0.01)
+	else:
+		print('No bus priate found. Try again !')

@@ -17,6 +17,13 @@ class Captured:
 		for i in self.channels:
 			print(self.channels[i])
 
+def isConnected(port='/dev/ttyUSB0'):
+	try:
+		ser = serial.Serial(port, 115200, timeout=1)
+		return True
+	except serial.SerialException:
+		print('Nothing found on ', port)
+		return False
 def send_cmd(port, cmd_lst):
 	print('Sending cmds: ' + str(cmd_lst) + ' to ' + str(port))
 	try:

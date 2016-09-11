@@ -189,7 +189,6 @@ def button(evs, disp, x_pos, y_pos, w, h, text, arg, action=None):
 					pygame.display.update()
 					action(arg)
 
-
 	pygame.font.init()
 	font = pygame.font.Font(None, 18)
 	label = font.render(text, 1, Colors.black)

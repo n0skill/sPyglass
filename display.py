@@ -53,22 +53,18 @@ class Textbox:
 				self.screen.blit(self.surface, (self.x_pos, self.y_pos))
 
 				if len(value) > 0:
-					savex = self.cur_x
 					lines = value.split('\r\n')
-					for i in lines:
+					savex = self.cur_x
+					for line in lines:
 						self.ln_count= self.ln_count+1
-						print(self.ln_count)
-						if self.ln_count > 20:
-							self.ln_count=0
-							self.cur_y=self.y_pos
-						else:
-							tabs = i.split('\t')
-							for tab in tabs:
-								label_l = self.font.render(tab, 1, Colors.green)
-								self.surface.blit(label_l, (self.cur_x, self.cur_y))
-								self.cur_x+=100
-							self.cur_x=savex
+						tabs = line.split('\t')
+						for tab in tabs:
+							self.cur_x+=100
+							label_l = self.font.render(tab, 1, Colors.green)
+							self.surface.blit(label_l, (self.cur_x, self.cur_y))
 							self.cur_y = self.ln_count*20
+						self.cur_x = savex
+					self.ln_count = 0
 			self.screen.blit(self.surface, (self.x_pos, self.y_pos))
 			pygame.display.update()
 

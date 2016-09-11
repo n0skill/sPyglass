@@ -2,6 +2,7 @@ import pygame
 import time
 import busPirate
 
+# TODO: implement textbox as a subclass of Box
 class Textbox:
 	def __init__(self, name, screen, w, h, x_pos, y_pos, backC=(10,10,10), foreC=(0,0,0)):
 		self.focus	= False
@@ -205,6 +206,7 @@ def zoomOut():
 		pass
 
 # Source: https://pythonprogramming.net/pygame-button-function-events/
+# Seems quite badly made
 def button(evs, disp, x_pos, y_pos, w, h, text, arg, arg2, action=None):
 	mouse = pygame.mouse.get_pos()
 	pos = (0,0)
@@ -261,6 +263,7 @@ def disp():
 	if connected:
 		tb = Textbox("console", screen, screen.get_width(), 350, 0, 350)
 		bx = Box((80, 40), (700, 720))
+		button = Button
 		pygame.display.update()
 		while True:
 			evts = pygame.event.get()

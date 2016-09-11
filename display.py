@@ -178,7 +178,7 @@ class Channel:
 		self.draw_labels()
 		for tup in self.values:
 			x_scaled = tup[0]*scale
-			y_scaled = (tup[1]-self.min)/((self.max-self.min)+0.01)*(self.height-10)
+			y_scaled = (tup[1]-self.min)/((self.max-self.min)+0.01)*(self.height-20)
 			scaled_vals.append((x_scaled+self.margin_l, y_scaled+10))
 		pygame.draw.aalines(self.surf, self.color, False, scaled_vals, 2)
 		self.display.blit(self.surf, (0, self.nb*self.height))

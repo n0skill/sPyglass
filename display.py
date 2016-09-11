@@ -225,7 +225,7 @@ def disp():
 	screen.fill(Colors.black)
 	disp_default_chans(screen)
 	if connected:
-		tb = Textbox("console", screen, screen.get_width(), 250, 10, 400)
+		tb = Textbox("console", screen, screen.get_width(), 350, 0, 350)
 		pygame.display.update()
 		while True:
 			evts = pygame.event.get()

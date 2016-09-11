@@ -3,7 +3,7 @@ import time
 import busPirate
 
 class Textbox:
-	def __init__(self, name, screen, w, h, x_pos, y_pos, backC=(20,20,20), foreC=(0,0,0)):
+	def __init__(self, name, screen, w, h, x_pos, y_pos, backC=(10,10,10), foreC=(0,0,0)):
 		self.focus	= False
 		self.h 		= h
 		self.w 		= w
@@ -101,7 +101,7 @@ class Box:
 						self.text += event.unicode
 				self.surface.fill(Colors.white)
 				text_render = self.font.render(self.text, 1, Colors.black)
-				self.surface.blit(text_render, (0, 0))
+				self.surface.blit(text_render, (0, self.size[1]/2))
 
 class Colors:
 	black 	= (0,0,0)
@@ -111,6 +111,7 @@ class Colors:
 	orang	= (250, 255, 0)
 	red		= (255, 0, 0)
 	grey	= (125, 125, 125)
+	darkgrey= (20, 20, 20)
 	green	= (0, 200, 30)
 
 class Channel:
@@ -204,7 +205,7 @@ def zoomOut():
 		pass
 
 # Source: https://pythonprogramming.net/pygame-button-function-events/
-def button(evs, disp, x_pos, y_pos, w, h, text, arg, action=None):
+def button(evs, disp, x_pos, y_pos, w, h, text, arg, arg2, action=None):
 	mouse = pygame.mouse.get_pos()
 	pos = (0,0)
 	for event in evs:
@@ -214,7 +215,7 @@ def button(evs, disp, x_pos, y_pos, w, h, text, arg, action=None):
 				if x_pos+w > pos[0] > x_pos and y_pos+h > pos[1] > y_pos:
 					pygame.draw.rect(disp, Colors.yello,(x_pos,y_pos,w,h))
 					pygame.display.update()
-					action(arg)
+					action(arg, arg2)
 
 	pygame.font.init()
 	font = pygame.font.Font(None, 30)
@@ -238,10 +239,14 @@ def disp_default_chans(screen):
 	Channel(screen, [(0,0),(0,0)], Colors.orang, 	"ms")
 	pygame.display.update()
 
-def plot_capture(screen):
+def plot_capture(screen, time):
 	channels = Channel.channels
 	Channel.reset()
-	capt = busPirate.capture_voltage()
+	if time is "":
+		time = 10
+	else:
+		time = int(time)
+	capt = busPirate.capture_voltage('/dev/ttyUSB0',time)
 	surf = pygame.Surface((screen.get_width(), 50))
 	for k, chan in enumerate(capt.channels):
 		color = channels[k].color
@@ -251,15 +256,15 @@ def plot_capture(screen):
 def disp():
 	connected = busPirate.isConnected()
 	screen	= pygame.display.set_mode((1024,768))
-	screen.fill(Colors.black)
+	screen.fill(Colors.darkgrey)
 	disp_default_chans(screen)
 	if connected:
 		tb = Textbox("console", screen, screen.get_width(), 350, 0, 350)
-		bx = Box((80, 40), (300, 720))
+		bx = Box((80, 40), (700, 720))
 		pygame.display.update()
 		while True:
 			evts = pygame.event.get()
-			button(evts, screen, screen.get_width()-120, 720, 120, 40, 'capture', screen, plot_capture)
+			button(evts, screen, screen.get_width()-120, 720, 120, 40, 'capture', screen, bx.text, plot_capture)
 			tb.action(evts)
 			bx.action(evts)
 			screen.blit(bx.surface, bx.pos)

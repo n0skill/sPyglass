@@ -48,11 +48,13 @@ class Textbox:
 					self.cur_x-=-20
 					self.surface.fill(self.col)
 					self.screen.blit(self.surface, (self.x_pos, self.y_pos))
-				else:
+				elif event.key < 207:
 					self.text += event.unicode
 					txt = self.font.render(event.unicode, 1, Colors.green)
 					self.cur_x+=20
 					self.surface.blit(txt, (self.cur_x,self.cur_y))
+				else:
+					print('cannot process ', event.key)
 
 				if len(value) > 0:
 					savex = self.cur_x

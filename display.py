@@ -35,6 +35,7 @@ class Textbox:
 				value = ""
 				if event.key < 207:
 					print(event.unicode)
+					self.surface.fill(self.col)
 					if event.unicode == '\r':
 						self.ln_count=1
 						self.cur_x = 20
@@ -42,14 +43,10 @@ class Textbox:
 						value = busPirate.send_cmd('/dev/ttyUSB0', cmd)
 						self.in_text=""
 						txt = self.font.render(self.in_text, 1, Colors.green)
-						self.surface.fill(self.col)
 						self.surface.blit(txt, (self.cur_x,self.cur_y))
-
 					elif event.unicode == '\b':
-						self.surface.fill(self.col)
 						self.in_text = self.in_text[:-1]
 					else:
-						self.surface.fill(self.col)
 						self.in_text += event.unicode
 				else:
 					print('cannot process ', event.key)

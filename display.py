@@ -29,9 +29,6 @@ class Textbox:
 				if event.button == 1:
 					if self.x_pos+self.w > pos[0] > self.x_pos and self.y_pos+self.h > pos[1] > self.y_pos:
 						self.focused=True
-						arrow = self.font.render('>', 1, Colors.green)
-						self.cur_x+=20
-						self.surface.blit(arrow, (self.cur_x, self.cur_y))
 					else:
 						self.focused=False
 			if event.type == pygame.KEYDOWN and self.focused is True:

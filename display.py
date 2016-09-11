@@ -34,24 +34,25 @@ class Textbox:
 			if event.type == pygame.KEYDOWN and self.focused is True:
 				cmd = []
 				value = ""
-				if event.unicode == '\r':
-					self.cur_y = self.ln_count*20
-					self.cur_x = 20
-					self.ln_count+=1
-					cmd.append(self.in_text)
-					value = busPirate.send_cmd('/dev/ttyUSB0', cmd)
-					self.in_text=""
+				if event.key < 207:
+					print(event.unicode)
+					if event.unicode == '\r':
+						self.cur_y = self.ln_count*20
+						self.cur_x = 20
+						self.ln_count+=1
+						cmd.append(self.in_text)
+						value = busPirate.send_cmd('/dev/ttyUSB0', cmd)
+						self.in_text=""
+					elif event.unicode == '\b':
+						self.in_text = self.in_text[:-1]
+					else:
+						self.in_text += event.unicode
 					self.surface.fill(self.col)
-				elif event.unicode == '\b':
-					self.in_text = self.in_text[:-1]
-				elif event.key < 207:
-					self.in_text += event.unicode
+					txt = self.font.render(self.in_text, 1, Colors.green)
+					self.surface.blit(txt, (self.cur_x,self.cur_y))
+					self.screen.blit(self.surface, (self.x_pos, self.y_pos))
 				else:
 					print('cannot process ', event.key)
-				self.surface.fill(self.col)
-				txt = self.font.render(self.in_text, 1, Colors.green)
-				self.surface.blit(txt, (self.cur_x,self.cur_y))
-				self.screen.blit(self.surface, (self.x_pos, self.y_pos))
 
 				if len(value) > 1:
 					lines = value.split('\r\n')

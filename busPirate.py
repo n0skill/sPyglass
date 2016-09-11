@@ -16,7 +16,7 @@ class Captured:
 	def print_all(self):
 		for i in self.channels:
 			print(self.channels[i])
-
+4
 def isConnected(port='/dev/ttyUSB0'):
 	try:
 		ser = serial.Serial(port, 115200, timeout=1)

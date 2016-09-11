@@ -11,6 +11,7 @@ class Textbox:
 		self.y_pos = y_pos
 		self.cur_x = 20
 		self.cur_y = 20
+		self.line_h= 12
 		self.col = backC
 		self.in_text = ""
 		self.ln_count = 1
@@ -49,11 +50,9 @@ class Textbox:
 						self.in_text += event.unicode
 				else:
 					print('cannot process ', event.key)
-
 				if len(value) > 1:
 					lines = value.split('\r\n')
 					savex = self.cur_x
-
 					self.surface.fill(self.col)
 					for line in lines:
 						self.ln_count= self.ln_count+1
@@ -61,11 +60,11 @@ class Textbox:
 						for tab in tabs:
 							label_l = self.font.render(tab, 1, Colors.green)
 							self.surface.blit(label_l, (self.cur_x, self.cur_y))
-							self.cur_x+=100
-							self.cur_y = self.ln_count*20
+							self.cur_x+=120
+							self.cur_y = self.ln_count*self.line_h
 						self.cur_x = savex
 				self.ln_count = 1
-				self.cur_y = self.ln_count*20
+				self.cur_y = self.ln_count*self.line_h
 			if len(self.in_text) > 0:
 				inp = self.font.render(self.in_text, 1, Colors.green)
 				self.surface.fill(self.col)

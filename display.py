@@ -49,6 +49,7 @@ class Textbox:
 						self.surface.fill(self.col)
 						self.in_text = self.in_text[:-1]
 					else:
+						self.surface.fill(self.col)
 						self.in_text += event.unicode
 				else:
 					print('cannot process ', event.key)

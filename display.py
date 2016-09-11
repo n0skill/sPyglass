@@ -9,7 +9,7 @@ class Textbox:
 		self.w = w
 		self.x_pos = x_pos
 		self.y_pos = y_pos
-		self.cur_x = x_pos
+		self.cur_x = 20
 		self.cur_y = 20
 		self.col = backC
 		self.in_text = ""
@@ -35,7 +35,6 @@ class Textbox:
 				value = ""
 				if event.key < 207:
 					print(event.unicode)
-					self.surface.fill(self.col)
 					if event.unicode == '\r':
 						self.ln_count=1
 						self.cur_x = 20
@@ -54,19 +53,22 @@ class Textbox:
 				if len(value) > 1:
 					lines = value.split('\r\n')
 					savex = self.cur_x
+
+					self.surface.fill(self.col)
 					for line in lines:
 						self.ln_count= self.ln_count+1
 						tabs = line.split('\t')
 						for tab in tabs:
-							self.cur_x+=100
 							label_l = self.font.render(tab, 1, Colors.green)
 							self.surface.blit(label_l, (self.cur_x, self.cur_y))
+							self.cur_x+=100
 							self.cur_y = self.ln_count*20
 						self.cur_x = savex
 				self.ln_count = 1
 				self.cur_y = self.ln_count*20
 			if len(self.in_text) > 0:
 				inp = self.font.render(self.in_text, 1, Colors.green)
+				self.surface.fill(self.col)
 				self.surface.blit(inp, (self.cur_x, self.cur_y))
 			self.screen.blit(self.surface, (self.x_pos, self.y_pos))
 			pygame.display.update()

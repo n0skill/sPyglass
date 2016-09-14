@@ -5,6 +5,7 @@ Buspirate visualisation software idea
 
 # Features
 * Graph of the tension using the 'v' command. Fixed length.
+* Console
 
 # To implement
 * Data export 

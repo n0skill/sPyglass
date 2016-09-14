@@ -1,7 +1,7 @@
 # sPyglass
 Buspirate visualisation software idea
 
-[[https://github.com/n0skill/sPyglass/screen.gif|alt=Screencast of sPyglass]]
+![](https://raw.githubusercontent.com/n0skill/sPyglass/master/screen.gif)
 
 # Features
 * Graph of the tension using the 'v' command. Fixed length.

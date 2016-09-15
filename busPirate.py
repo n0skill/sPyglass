@@ -19,27 +19,31 @@ class Captured:
 
 def isConnected(port='/dev/ttyUSB0'):
 	try:
-		ser = serial.Serial(port, 115200, timeout=1)
-		return True
+		ser = serial.Serial(port, 115200, timeout=0.05)
+		command = ['i']
+		reply = send_cmd(port, command)
+		for line in reply.split('\r\n'):
+			print(line)
+			if line == "Bus Pirate v3a":
+				print('okay')
+				return True
 	except serial.SerialException:
 		print('Nothing found on ', port)
 		return False
+
 def send_cmd(port, cmd_lst):
 	print('Sending cmds: ' + str(cmd_lst) + ' to ' + str(port))
 	try:
-		ser	= serial.Serial(port, 115200, timeout=1)
 		recv = ""
-		time.sleep(0.5)
-		if ser.is_open:
-			for cmd in cmd_lst:
-				cmd = cmd+'\n'
-				ser.write(cmd.encode())
-				time.sleep(0.01) # Do not monopolize CPU in order to recieve data
-			while ser.inWaiting() > 0:
-				recv += ser.read(1024).decode("utf-8")
-				time.sleep(0.01) # Do not monopolize CPU
-			ser.close()
-			return recv
+		conn = serial.Serial(port, 115200, timeout=0.01)
+		time.sleep(0.01)
+		for cmd in cmd_lst:
+			cmd = cmd+'\n'
+			conn.write(cmd.encode())
+			time.sleep(0.008)
+		while conn.inWaiting() > 0:
+			recv += conn.read(256).decode("utf-8")
+		return recv
 
 	except serial.SerialException as e:
 		if e.errno == 2:
@@ -53,15 +57,16 @@ def capture_voltage(port='/dev/ttyUSB0', time=100):
 	mode = 'm'
 	w	 = '2'
 	psu	 = 'W'
-	voltage_cmd = 'v%'
-	volts = ''
+	voltage_cmd = 'v'
 	capt_lst = []
 	results = {}
+	values = ""
 	try:
+		send_cmd(port, mode)
+		send_cmd(port, w)
+		send_cmd(port, psu)
 		for i in range(0, time):
-			volts += voltage_cmd
-		cmds = [mode, w, psu, volts]
-		values = send_cmd(port, cmds)
+			values += send_cmd(port, voltage_cmd)
 		clean = re.findall('^(GND.+)$', values, re.MULTILINE)
 		for val in clean:
 			if val.endswith('L\t\r') or val.endswith('H\t\r'):

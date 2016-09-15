@@ -2,7 +2,6 @@ import pygame
 import time
 import busPirate
 
-
 class Colors:
 	black 	= (0,0,0)
 	white 	= (255, 255, 255)
@@ -30,6 +29,7 @@ class Box:
 		pygame.font.init()
 		self.font 	= pygame.font.Font(None, 30)
 		self.surface.fill(color)
+		self.draw_label()
 	def action(self, events):
 		for event in events:
 			if event.type == pygame.MOUSEBUTTONDOWN:
@@ -48,7 +48,13 @@ class Box:
 				self.surface.fill(self.color)
 				text_render = self.font.render(self.text, 1,
 					(255-self.color[0], 255-self.color[1], 255-self.color[2]))
-				self.surface.blit(text_render, self.cursor_pos)
+				self.surface.blit(text_render, (self.cursor_pos[0], self.cursor_pos[1]/2))
+
+	def draw_label(self):
+		print('Drawing label')
+
+		text_l = self.font.render("", 1, self.color)
+		self.surface.blit(text_l, (self.pos[0], self.pos[1]))
 
 class Console(Box):
 	def __init__(self, size, pos):
@@ -80,7 +86,7 @@ class Console(Box):
 						for tab in tabs:
 							label_l = self.font.render(tab, 1, Colors.green)
 							self.surface.blit(label_l, self.cursor_pos)
-							self.cursor_pos = (self.cursor_pos[0]+120, self.nb_ln*self.line_h)
+							self.cursor_pos = (self.cursor_pos[0]+80, self.nb_ln*self.line_h)
 						self.cursor_pos = (savex, self.cursor_pos[1])
 				self.nb_ln = 1
 				self.cursor_pos = (self.cursor_pos[0], self.nb_ln*self.line_h)
@@ -105,7 +111,7 @@ class Channel:
 		self.display = display
 
 		# Scale x and y axis
-		self.x_scale = (self.display.get_width()-self.margin_l)/self.length
+		self.x_scale = (self.display.get_width()-self.margin_l)/self.length+1
 		self.max = max(self.values, key=lambda y: y[1])[1]
 		self.min = min(self.values, key=lambda y: y[1])[1]
 
@@ -229,25 +235,25 @@ def plot_capture(screen, time):
 		Channel(screen, capt.channels[chan], color, "ms")
 	Channel.plotall()
 
+def disp_unconnected():
+	screen = pygame.display.set_mode((1024,768))
+	screen.fill(Colors.darkgrey)
+	disp_default_chans(screen)
+
 def disp():
-	connected = busPirate.isConnected()
 	screen	= pygame.display.set_mode((1024,768))
 	screen.fill(Colors.darkgrey)
 	disp_default_chans(screen)
-	if connected:
-		tb = Console((screen.get_width(), 350), (0, 350))
-		bx = Box((80, 40), (700, 720))
+	tb = Console((screen.get_width(), 350), (0, 350))
+	bx = Box((80, 40), (700, 720))
+	while True:
+		evts = pygame.event.get()
+		button(evts, screen, screen.get_width()-120, 720, 120, 40, 'capture', screen, bx.text, plot_capture)
+		tb.action(evts)
+		bx.action(evts)
+		screen.blit(bx.surface, bx.pos)
+		screen.blit(tb.surface, tb.pos)
+		mouse_action_trigger(evts, 4, zoomIn)
+		mouse_action_trigger(evts, 5, zoomOut)
 		pygame.display.update()
-		while True:
-			evts = pygame.event.get()
-			button(evts, screen, screen.get_width()-120, 720, 120, 40, 'capture', screen, bx.text, plot_capture)
-			tb.action(evts)
-			bx.action(evts)
-			screen.blit(bx.surface, bx.pos)
-			screen.blit(tb.surface, tb.pos)
-			mouse_action_trigger(evts, 4, zoomIn)
-			mouse_action_trigger(evts, 5, zoomOut)
-			pygame.display.update()
-			time.sleep(0.01)
-	else:
-		print('No bus priate found. Try again !')
+		time.sleep(0.01)

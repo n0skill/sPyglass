@@ -9,5 +9,8 @@ import re
 def main():
 	port 	= sys.argv[1]
 	cmd 	= sys.argv[2]
-	display.disp()
+	if busPirate.isConnected():
+		display.disp()
+	else:
+		display.disp_unconnected()
 main()

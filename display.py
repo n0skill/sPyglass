@@ -13,22 +13,19 @@ class Colors:
 	darkgrey= (20, 20, 20)
 	green	= (0, 200, 30)
 
-# TODO: implement textbox as a subclass of Box
 class Box:
+	""" Class for displaying simple input textboxes """
 	def __init__(self, size, position, color=Colors.white, text=""):
 		self.surface 	= pygame.Surface(size)
-		print('sz ', size)
-		print('pos', position)
 		self.text 		= text
 		self.pos		= position
 		self.size		= size
-
 		self.cursor_pos = (0, self.size[1]/2)
 		self.focus		= False
 		self.color		= color
+		self.surface.fill(color)
 		pygame.font.init()
 		self.font 	= pygame.font.Font(None, 30)
-		self.surface.fill(color)
 		self.draw_label()
 	def action(self, events):
 		for event in events:
@@ -51,28 +48,29 @@ class Box:
 				self.surface.blit(text_render, (self.cursor_pos[0], self.cursor_pos[1]/2))
 
 	def draw_label(self):
-		print('Drawing label')
-
 		text_l = self.font.render("", 1, self.color)
 		self.surface.blit(text_l, (self.pos[0], self.pos[1]))
 
 class Console(Box):
+	""" Console class: Displays a command line interface
+	 	and sends the values to the serial port """
 	def __init__(self, size, pos):
 		Box.__init__(self, size, pos, Colors.black)
 		self.font 	= pygame.font.Font(None, 20)
 		self.line_h	= 12
 		self.color 	= Colors.black
 		self.cursor_pos = (20,20)
+		self.nb_ln = 1
 
 	def action(self, events):
 		super(Console, self).action(events)
 		for event in events:
 			if event.type == pygame.KEYDOWN and self.focus is True:
-				cmd = []
+				cmd = ""
 				value = ""
 				if event.unicode == '\r':
 					self.text=self.text[:-1]
-					cmd.append(self.text)
+					cmd = cmd+self.text
 					value = busPirate.send_cmd('/dev/ttyUSB0', cmd)
 					self.text=""
 
@@ -97,6 +95,9 @@ class Console(Box):
 			pygame.display.update()
 
 class Channel:
+	"""
+	Class to display separate channel captures
+	"""
 	nb = 0
 	height  = 80
 	zoom_level=1
@@ -118,7 +119,6 @@ class Channel:
 		self.surf = pygame.Surface((display.get_width(), self.height))
 		self.surf.fill((25, 25, 25))
 		self.nb = Channel.nb
-
 		pygame.font.init()
 		self.font = pygame.font.Font(None, 16)
 		self.draw_scale()
@@ -171,7 +171,7 @@ class Channel:
 	def reset():
 		Channel.nb = 0
 
-
+# TODO: put these in the Channel class. Not out of it.
 def zoomIn():
 	Channel.reset()
 	Channel.zoom_level=Channel.zoom_level+0.3

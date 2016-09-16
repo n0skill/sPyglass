@@ -1,9 +1,12 @@
+
 # TODO: move all communication handling in this file/class
 import serial
 import time
 import re
 
 class Captured:
+	""" Class for data capture and manipulations
+	"""
 	def __init__(self, values):
 		# Capture is an array of values
 		self.values = values
@@ -17,9 +20,22 @@ class Captured:
 		for i in self.channels:
 			print(self.channels[i])
 
+class DigitalCapture(object):
+	"""docstring for """
+	def __init__(self, arg):
+		super(DigitalCapture, self).__init__()
+		self.arg = arg
+
+class AnalogCapture(object):
+	"""docstring for AnalogCapture"""
+	def __init__(self, arg):
+		super(AnalogCapture, self).__init__()
+		self.arg = arg
+
+
 def isConnected(port='/dev/ttyUSB0'):
 	try:
-		ser = serial.Serial(port, 115200, timeout=0.05)
+		ser = serial.Serial(port, 115200, timeout=0.5)
 		command = ['i']
 		reply = send_cmd(port, command)
 		for line in reply.split('\r\n'):
@@ -31,18 +47,18 @@ def isConnected(port='/dev/ttyUSB0'):
 		print('Nothing found on ', port)
 		return False
 
-def send_cmd(port, cmd_lst):
-	print('Sending cmds: ' + str(cmd_lst) + ' to ' + str(port))
+def send_cmd(port, cmd):
+	print('Sending cmds: ' + str(cmd) + ' to ' + str(port))
 	try:
 		recv = ""
-		conn = serial.Serial(port, 115200, timeout=0.01)
+		conn = serial.Serial(port, 115200, timeout=0.05)
+		time.sleep(0.05)
+		cmd = cmd+'\n'
+		conn.write(cmd.encode())
 		time.sleep(0.01)
-		for cmd in cmd_lst:
-			cmd = cmd+'\n'
-			conn.write(cmd.encode())
-			time.sleep(0.008)
 		while conn.inWaiting() > 0:
 			recv += conn.read(256).decode("utf-8")
+			time.sleep(0.01)
 		return recv
 
 	except serial.SerialException as e:
@@ -65,9 +81,22 @@ def capture_voltage(port='/dev/ttyUSB0', time=100):
 		send_cmd(port, mode)
 		send_cmd(port, w)
 		send_cmd(port, psu)
-		for i in range(0, time):
-			values += send_cmd(port, voltage_cmd)
+		n_cmds = int(time/255)+1
+		# If the command is longer than what we can use, send multiple commands
+		for i in range(1, n_cmds+1):
+			# If it's not the last iteration
+			if i < n_cmds:
+				actual_cmd 	= voltage_cmd*255
+				values		+= send_cmd(port, actual_cmd)
+			else:
+				# It's the last bit that is missing
+				print('Lastly: ')
+				cmdd = voltage_cmd*(time%255)
+
+				values += send_cmd(port, cmdd)
+
 		clean = re.findall('^(GND.+)$', values, re.MULTILINE)
+
 		for val in clean:
 			if val.endswith('L\t\r') or val.endswith('H\t\r'):
 				reg = re.findall('(\d+.\d+)', val)

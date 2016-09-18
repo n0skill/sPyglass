@@ -3,9 +3,10 @@ import serial
 import time
 import re
 
+list_capt = []
 class Captured:
-	""" Class for data capture and manipulations
-	"""
+	datas = []
+	""" Class for data capture and manipulations"""
 	def __init__(self, values):
 		# Capture is an array of values
 		self.values = values
@@ -15,9 +16,6 @@ class Captured:
 			self.channels['ch2'].append((k, float(val['RD'])))
 			self.channels['ch3'].append((k, float(val['YW'])))
 			self.channels['ch4'].append((k, float(val['RD'])))
-	def print_all(self):
-		for i in self.channels:
-			print(self.channels[i])
 
 class DigitalCapture(object):
 	"""docstring for """
@@ -84,7 +82,6 @@ def capture_voltage(pause_times, port='/dev/ttyUSB0', time=100):
 		send_cmd(port, cmd_w)
 		send_cmd(port, cmd_psu)
 		n_cmds = int(time*len(cmd)/255)+1
-		print(n_cmds)
 		# If the command is longer than what we can use, send multiple commands
 		for i in range(1, n_cmds+1):
 			# If it's not the last iteration
@@ -105,8 +102,14 @@ def capture_voltage(pause_times, port='/dev/ttyUSB0', time=100):
 				results = {'BR': reg[0], 'RD': reg[1], 'OR': reg[2], 'YW':reg[3]}
 				capt_lst.append(results)
 		captured_vals = Captured(capt_lst)
+		list_capt.append(captured_vals)
 		print('expected values: ' + str(time) + '. Got: ' + str(len(capt_lst)))
 		return captured_vals
 	except Exception as e:
 		print(e)
 		return None
+
+def export():
+	with open('./spyglass.txt', 'w') as f:
+		for data in list_capt:
+			f.write(str(data.values))

@@ -107,7 +107,7 @@ class Console(Box):
 			pygame.display.update()
 
 class Channel:
-	"""	Class to display separate channel captures """
+	"""	Class to display separate channel captures"""
 	nb = 0
 	height  = 80
 	margin_top = 50
@@ -172,7 +172,7 @@ class Channel:
 		for tup in self.values:
 			x_scaled = tup[0]*scale
 			y_scaled = (tup[1]-self.min)/((self.max-self.min)+0.01)*(self.height-20)
-			scaled_vals.append((x_scaled+self.margin_l, y_scaled+10))
+			scaled_vals.append((x_scaled+self.margin_l, y_scaled+15))
 		pygame.draw.aalines(self.surf, self.color, False, scaled_vals, 2)
 		self.display.blit(self.surf, (0, self.nb*self.height+Channel.margin_top))
 		pygame.display.update()
@@ -196,7 +196,7 @@ class Button():
 		self.surface.blit(font, (0,0))
 
 
-	def action(self, events, action, inputs):
+	def action(self, events, action, inputs=None):
 		x 	= self.x_pos
 		y 	= self.y_pos
 		w 	= self.w
@@ -205,7 +205,10 @@ class Button():
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				evtpos = pygame.mouse.get_pos()
 				if x+w > evtpos[0] > x and y+h > evtpos[1] > y:
-					action(inputs)
+					if inputs == None:
+						action()
+					else:
+						action(inputs)
 
 # TODO: put these in the Channel class. Not out of it.
 def zoomIn():
@@ -256,11 +259,13 @@ def disp_unconnected():
 def display():
 	screen.fill(Colors.darkgrey)
 	disp_default_chans(screen)
-	bx_nb_capture = Box((70, 25), (650, 20), Colors.white, "Nb of V capt.")
-	bx_wait_time  = Box((70, 25), (750, 20), Colors.white, "Delay [ms]")
-	btn_capture   = Button("Capture", (screen.get_width()-80, 20))
-	tb = Console((screen.get_width(), 350), (0, 350))
+	bx_nb_capture 	= Box((70, 25), (650, 20), Colors.white, "Nb of V capt.")
+	bx_wait_time  	= Box((70, 25), (750, 20), Colors.white, "Delay [ms]")
+	btn_capture   	= Button("Capture", (screen.get_width()-80, 20))
+	btn_export		= Button("Export", (30, 20))
+	tb = Console((screen.get_width(), 350), (0, 400))
 
+	screen.blit(btn_export.surface, (btn_export.x_pos, btn_export.y_pos))
 	screen.blit(btn_capture.surface, (btn_capture.x_pos, btn_capture.y_pos))
 	screen.blit(bx_nb_capture.surface, bx_nb_capture.pos)
 	screen.blit(bx_wait_time.surface, bx_wait_time.pos)
@@ -270,6 +275,7 @@ def display():
 		bx_nb_capture.action(evts)
 		bx_wait_time.action(evts)
 		btn_capture.action(evts, capture_and_plot, [bx_nb_capture.text, bx_wait_time.text])
+		btn_export.action(evts, busPirate.export, None)
 		screen.blit(tb.surface, tb.pos)
 		mouse_action_trigger(evts, 4, zoomIn)
 		mouse_action_trigger(evts, 5, zoomOut)

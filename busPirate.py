@@ -1,4 +1,3 @@
-
 # TODO: move all communication handling in this file/class
 import serial
 import time
@@ -36,7 +35,7 @@ class AnalogCapture(object):
 def isConnected(port='/dev/ttyUSB0'):
 	try:
 		ser = serial.Serial(port, 115200, timeout=0.5)
-		command = ['i']
+		command = 'i'
 		reply = send_cmd(port, command)
 		for line in reply.split('\r\n'):
 			print(line)
@@ -69,34 +68,37 @@ def send_cmd(port, cmd):
 		else:
 			print(e)
 
-def capture_voltage(port='/dev/ttyUSB0', time=100):
-	mode = 'm'
-	w	 = '2'
-	psu	 = 'W'
+def capture_voltage(pause_times, port='/dev/ttyUSB0', time=100):
+	cmd_mode = 'm'
+	cmd_w	 = '2'
+	cmd_psu	 = 'W'
 	voltage_cmd = 'v'
+	pause_cmd	= '%'*int(pause_times)
+	cmd = (voltage_cmd+pause_cmd)
+	print(cmd)
 	capt_lst = []
 	results = {}
 	values = ""
 	try:
-		send_cmd(port, mode)
-		send_cmd(port, w)
-		send_cmd(port, psu)
-		n_cmds = int(time/255)+1
+		send_cmd(port, cmd_mode)
+		send_cmd(port, cmd_w)
+		send_cmd(port, cmd_psu)
+		n_cmds = int(time*len(cmd)/255)+1
+		print(n_cmds)
 		# If the command is longer than what we can use, send multiple commands
 		for i in range(1, n_cmds+1):
 			# If it's not the last iteration
 			if i < n_cmds:
-				actual_cmd 	= voltage_cmd*255
-				values		+= send_cmd(port, actual_cmd)
+				actual_cmd 	= cmd*(int(255/len(cmd))+1)
+				print(actual_cmd)
+				values += send_cmd(port, actual_cmd)
 			else:
 				# It's the last bit that is missing
 				print('Lastly: ')
-				cmdd = voltage_cmd*(time%255)
-
-				values += send_cmd(port, cmdd)
+				actual_cmd = cmd*(time%255)
+				values += send_cmd(port, actual_cmd)
 
 		clean = re.findall('^(GND.+)$', values, re.MULTILINE)
-
 		for val in clean:
 			if val.endswith('L\t\r') or val.endswith('H\t\r'):
 				reg = re.findall('(\d+.\d+)', val)

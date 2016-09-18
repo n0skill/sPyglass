@@ -2,6 +2,8 @@ import pygame
 import time
 import busPirate
 
+screen	= pygame.display.set_mode((1024,768))
+
 class Colors:
 	black 	= (0,0,0)
 	white 	= (255, 255, 255)
@@ -15,17 +17,18 @@ class Colors:
 
 class Box:
 	""" Class for displaying simple input textboxes """
-	def __init__(self, size, position, color=Colors.white, text=""):
+	def __init__(self, size, position, color=Colors.white, label=""):
 		self.surface 	= pygame.Surface(size)
-		self.text 		= text
+		self.text 		= ""
+		self.label 		= label
 		self.pos		= position
 		self.size		= size
-		self.cursor_pos = (0, self.size[1]/2)
+		self.cursor_pos = (0, self.size[1]/4)
 		self.focus		= False
 		self.color		= color
 		self.surface.fill(color)
 		pygame.font.init()
-		self.font 	= pygame.font.Font(None, 30)
+		self.font 	= pygame.font.SysFont("inconsolata", 18)
 		self.draw_label()
 	def action(self, events):
 		for event in events:
@@ -43,24 +46,33 @@ class Box:
 					else:
 						self.text += event.unicode
 				self.surface.fill(self.color)
-				text_render = self.font.render(self.text, 1,
-					(255-self.color[0], 255-self.color[1], 255-self.color[2]))
-				self.surface.blit(text_render, (self.cursor_pos[0], self.cursor_pos[1]/2))
-
+				text_render = self.font.render(self.text, True, Colors.black)
+				self.surface.blit(text_render, (self.cursor_pos[0], self.cursor_pos[1]))
+				screen.blit(self.surface, self.pos)
 	def draw_label(self):
-		text_l = self.font.render("", 1, self.color)
-		self.surface.blit(text_l, (self.pos[0], self.pos[1]))
+		label_surf = pygame.Surface((60, 10), pygame.SRCALPHA, 32)
+		label_surf.convert_alpha()
+		font = pygame.font.SysFont('Inconsolata', 10)
+		text_l = font.render(self.label, 1, Colors.green)
+		label_surf.blit(text_l, (0,0))
+		screen.blit(label_surf, (self.pos[0], self.pos[1]-self.size[1]/2))
+		pygame.display.update()
 
 class Console(Box):
 	""" Console class: Displays a command line interface
 	 	and sends the values to the serial port """
 	def __init__(self, size, pos):
 		Box.__init__(self, size, pos, Colors.black)
-		self.font 	= pygame.font.Font(None, 20)
-		self.line_h	= 12
+		self.font 	= pygame.font.SysFont("inconsolata", 20)
+		self.line_h	= 18
 		self.color 	= Colors.black
 		self.cursor_pos = (20,20)
 		self.nb_ln = 1
+
+	# Don't draw labels on console objects
+	def draw_label(self):
+		super(Console, self).draw_label
+		return None
 
 	def action(self, events):
 		super(Console, self).action(events)
@@ -95,11 +107,10 @@ class Console(Box):
 			pygame.display.update()
 
 class Channel:
-	"""
-	Class to display separate channel captures
-	"""
+	"""	Class to display separate channel captures """
 	nb = 0
 	height  = 80
+	margin_top = 50
 	zoom_level=1
 	channels = []
 	def __init__(self, display, values, color, unit):
@@ -136,7 +147,7 @@ class Channel:
 		self.surf.blit(self.lab1, (40, Channel.height/2))
 		self.surf.blit(labelmax, (self.margin_l-30, 10))
 		self.surf.blit(labelmin, (self.margin_l-30, 70))
-		self.display.blit(self.surf, (0, self.nb*self.height))
+		self.display.blit(self.surf, (0, self.nb*self.height+Channel.margin_top))
 	def draw_scale(self):
 		scale = self.x_scale*Channel.zoom_level
 		font = self.font
@@ -163,13 +174,38 @@ class Channel:
 			y_scaled = (tup[1]-self.min)/((self.max-self.min)+0.01)*(self.height-20)
 			scaled_vals.append((x_scaled+self.margin_l, y_scaled+10))
 		pygame.draw.aalines(self.surf, self.color, False, scaled_vals, 2)
-		self.display.blit(self.surf, (0, self.nb*self.height))
+		self.display.blit(self.surf, (0, self.nb*self.height+Channel.margin_top))
 		pygame.display.update()
 	def plotall():
 		for chan in Channel.channels:
 			chan.plot()
 	def reset():
 		Channel.nb = 0
+
+class Button():
+	"""Class to create buttons for the GUI"""
+	def __init__(self, text, position):
+		self.x_pos 	= position[0]
+		self.y_pos 	= position[1]
+		self.w		= 80
+		self.h		= 25
+		self.font	= pygame.font.SysFont('inconsolata', 20)
+		font = self.font.render(text, 1, Colors.black)
+		self.surface = pygame.Surface((self.w, self.h))
+		self.surface.fill(Colors.grey)
+		self.surface.blit(font, (0,0))
+
+
+	def action(self, events, action, inputs):
+		x 	= self.x_pos
+		y 	= self.y_pos
+		w 	= self.w
+		h	= self.h
+		for event in events:
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				evtpos = pygame.mouse.get_pos()
+				if x+w > evtpos[0] > x and y+h > evtpos[1] > y:
+					action(inputs)
 
 # TODO: put these in the Channel class. Not out of it.
 def zoomIn():
@@ -185,25 +221,6 @@ def zoomOut():
 			chan.plot()
 	else:
 		pass
-
-# Source: https://pythonprogramming.net/pygame-button-function-events/
-def button(evs, disp, x_pos, y_pos, w, h, text, arg, arg2, action=None):
-	mouse = pygame.mouse.get_pos()
-	pos = (0,0)
-	for event in evs:
-		if event.type == pygame.MOUSEBUTTONDOWN:
-			pos = pygame.mouse.get_pos()
-			if event.button == 1:
-				if x_pos+w > pos[0] > x_pos and y_pos+h > pos[1] > y_pos:
-					pygame.draw.rect(disp, Colors.yello,(x_pos,y_pos,w,h))
-					pygame.display.update()
-					action(arg, arg2)
-
-	pygame.font.init()
-	font = pygame.font.Font(None, 30)
-	label = font.render(text, 1, Colors.black)
-	pygame.draw.rect(disp, Colors.grey ,(x_pos,y_pos,w,h))
-	disp.blit(label, (x_pos+20, y_pos+10))
 
 def mouse_action_trigger(events, mouse_btn_no, action=None):
 	mouse = pygame.mouse.get_pos()
@@ -221,14 +238,10 @@ def disp_default_chans(screen):
 	Channel(screen, [(0,0),(0,0)], Colors.orang, 	"ms")
 	pygame.display.update()
 
-def plot_capture(screen, time):
+def capture_and_plot(inputs):
 	channels = Channel.channels
 	Channel.reset()
-	if time is "":
-		time = 10
-	else:
-		time = int(time)
-	capt = busPirate.capture_voltage('/dev/ttyUSB0',time)
+	capt = busPirate.capture_voltage(int(inputs[1]), '/dev/ttyUSB0',int(inputs[0]))
 	surf = pygame.Surface((screen.get_width(), 50))
 	for k, chan in enumerate(capt.channels):
 		color = channels[k].color
@@ -240,18 +253,23 @@ def disp_unconnected():
 	screen.fill(Colors.darkgrey)
 	disp_default_chans(screen)
 
-def disp():
-	screen	= pygame.display.set_mode((1024,768))
+def display():
 	screen.fill(Colors.darkgrey)
 	disp_default_chans(screen)
+	bx_nb_capture = Box((70, 25), (650, 20), Colors.white, "Nb of V capt.")
+	bx_wait_time  = Box((70, 25), (750, 20), Colors.white, "Delay [ms]")
+	btn_capture   = Button("Capture", (screen.get_width()-80, 20))
 	tb = Console((screen.get_width(), 350), (0, 350))
-	bx = Box((80, 40), (700, 720))
+
+	screen.blit(btn_capture.surface, (btn_capture.x_pos, btn_capture.y_pos))
+	screen.blit(bx_nb_capture.surface, bx_nb_capture.pos)
+	screen.blit(bx_wait_time.surface, bx_wait_time.pos)
 	while True:
 		evts = pygame.event.get()
-		button(evts, screen, screen.get_width()-120, 720, 120, 40, 'capture', screen, bx.text, plot_capture)
 		tb.action(evts)
-		bx.action(evts)
-		screen.blit(bx.surface, bx.pos)
+		bx_nb_capture.action(evts)
+		bx_wait_time.action(evts)
+		btn_capture.action(evts, capture_and_plot, [bx_nb_capture.text, bx_wait_time.text])
 		screen.blit(tb.surface, tb.pos)
 		mouse_action_trigger(evts, 4, zoomIn)
 		mouse_action_trigger(evts, 5, zoomOut)

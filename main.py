@@ -10,7 +10,7 @@ def main():
 	port 	= sys.argv[1]
 	cmd 	= sys.argv[2]
 	if busPirate.isConnected():
-		display.disp()
+		display.display()
 	else:
 		display.disp_unconnected()
 main()

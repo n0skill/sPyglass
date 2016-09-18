@@ -5,7 +5,6 @@ import re
 
 list_capt = []
 class Captured:
-	datas = []
 	""" Class for data capture and manipulations"""
 	def __init__(self, values):
 		# Capture is an array of values

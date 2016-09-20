@@ -112,3 +112,10 @@ def export():
 	with open('./spyglass.txt', 'w') as f:
 		for data in list_capt:
 			f.write(str(data.values))
+def bitbang_mode():
+	conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)
+	for i in range(0,20):
+		conn.write(b'\x00')
+		if b'BBIO' in conn.read(10):
+			return True
+	return False

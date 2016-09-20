@@ -30,6 +30,7 @@ class Box:
 		pygame.font.init()
 		self.font 	= pygame.font.SysFont("inconsolata", 18)
 		self.draw_label()
+		screen.blit(self.surface, self.pos)
 	def action(self, events):
 		for event in events:
 			if event.type == pygame.MOUSEBUTTONDOWN:
@@ -194,7 +195,7 @@ class Button():
 		self.surface = pygame.Surface((self.w, self.h))
 		self.surface.fill(Colors.grey)
 		self.surface.blit(font, (0,0))
-
+		screen.blit(self.surface, position)
 
 	def action(self, events, action, inputs=None):
 		x 	= self.x_pos
@@ -264,11 +265,6 @@ def display():
 	btn_capture   	= Button("Capture", (screen.get_width()-80, 20))
 	btn_export		= Button("Export", (30, 20))
 	tb = Console((screen.get_width(), 350), (0, 400))
-
-	screen.blit(btn_export.surface, (btn_export.x_pos, btn_export.y_pos))
-	screen.blit(btn_capture.surface, (btn_capture.x_pos, btn_capture.y_pos))
-	screen.blit(bx_nb_capture.surface, bx_nb_capture.pos)
-	screen.blit(bx_wait_time.surface, bx_wait_time.pos)
 	while True:
 		evts = pygame.event.get()
 		tb.action(evts)

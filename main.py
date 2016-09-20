@@ -8,7 +8,6 @@ import re
 
 def main():
 	port 	= sys.argv[1]
-	cmd 	= sys.argv[2]
 	if busPirate.isConnected():
 		display.display()
 	else:

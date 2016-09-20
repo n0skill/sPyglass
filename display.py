@@ -115,53 +115,53 @@ class Channel:
 	zoom_level=1
 	channels = []
 	def __init__(self, display, values, color, unit):
-		self.margin_l = 100
-		self.length = len(values)
-		self.height = 80
-		self.color = color
-		self.unit = unit
-		self.values = values
-		self.display = display
+		self.margin_l	= 100
+		self.length		= len(values)
+		self.height 	= 80
+		self.color 		= color
+		self.unit 		= unit
+		self.values 	= values
+		self.display 	= display
+		self.width		= display.get_width()
+		self.surf = pygame.Surface((self.width, self.height))
+		self.surf.fill((25, 25, 25))
+		self.nb = Channel.nb
 
 		# Scale x and y axis
-		self.x_scale = (self.display.get_width()-self.margin_l)/self.length+1
+		self.x_scale = (self.width-self.margin_l)/self.length+1
 		self.max = max(self.values, key=lambda y: y[1])[1]
 		self.min = min(self.values, key=lambda y: y[1])[1]
 
-		self.surf = pygame.Surface((display.get_width(), self.height))
-		self.surf.fill((25, 25, 25))
-		self.nb = Channel.nb
 		pygame.font.init()
 		self.font = pygame.font.Font(None, 16)
 		self.draw_scale()
 		self.draw_labels()
-		pygame.display.update()
+		#pygame.display.update()
 		Channel.nb = Channel.nb+1
 		Channel.channels.append(self)
 	def draw_labels(self):
 		font = self.font
 		labelmax	= font.render(str(self.max), 1, self.color)
 		labelmin 	= font.render(str(self.min), 1, self.color)
-		self.lab1 	= font.render("ch"+str(self.nb), 1, self.color)
-		self.timescale = font.render(str(self.length), 1, self.color)
-		self.surf.blit(self.timescale, (self.display.get_width()-20, 10))
-		self.surf.blit(self.lab1, (40, Channel.height/2))
+		labelch 	= font.render("ch"+str(self.nb), 1, self.color)
+		timescale 	= font.render(str(self.length), 1, self.color)
+		self.surf.blit(timescale, (self.display.get_width()-20, 10))
+		self.surf.blit(labelch, (40, Channel.height/2))
 		self.surf.blit(labelmax, (self.margin_l-30, 10))
 		self.surf.blit(labelmin, (self.margin_l-30, 70))
 		self.display.blit(self.surf, (0, self.nb*self.height+Channel.margin_top))
 	def draw_scale(self):
-		scale = self.x_scale*Channel.zoom_level
-		font = self.font
-		color = Colors.green
-		surface = self.surf
-		pygame.draw.line(surface, color, (self.margin_l, 3), (self.display.get_width(), 3), 1)
+		scale_surface = pygame.Surface((self.width, 5))
+		scale_surface.fill(Colors.grey)
+		pygame.draw.line(scale_surface, Colors.green, (self.margin_l, 3), (self.width, 3), 1)
 		for i in range(0, self.length):
-			if i%5==0:
-				timelbl = font.render(str(i), 1, color)
-				time_unit = font.render(self.unit, 1, color)
-				surface.blit(time_unit, (self.margin_l-25, -2))
-				surface.blit(timelbl, (i*scale+self.margin_l-2, 6))
-				pygame.draw.line(surface, color, (i*scale+self.margin_l, 0), (i*scale+self.margin_l, 4), 1)
+			if i%10==0:
+				timelbl 	= self.font.render(str(i), 1, self.color)
+				time_unit 	= self.font.render(self.unit, 1, self.color)
+				self.surf.blit(time_unit, (self.margin_l-25, -2))
+				self.surf.blit(timelbl, (i*scale_+self.margin_l-2, 6))
+				pygame.draw.line(scale_surface, self.color, (i*scale+self.margin_l, 0), (i*scale+self.margin_l, 4), 1)
+		self.surf.blit(scale_surface, (0,0))
 
 	def plot(self):
 		scaled_vals = []
@@ -182,6 +182,7 @@ class Channel:
 			chan.plot()
 	def reset():
 		Channel.nb = 0
+		Channel.channels = []
 
 class Button():
 	"""Class to create buttons for the GUI"""
@@ -240,7 +241,7 @@ def disp_default_chans(screen):
 	Channel(screen, [(0,0),(0,0)], Colors.red, 		"ms")
 	Channel(screen, [(0,0),(0,0)], Colors.yello, 	"ms")
 	Channel(screen, [(0,0),(0,0)], Colors.orang, 	"ms")
-	pygame.display.update()
+	print('Default channels displayed')
 
 def capture_and_plot(inputs):
 	channels = Channel.channels
@@ -252,13 +253,15 @@ def capture_and_plot(inputs):
 		Channel(screen, capt.channels[chan], color, "ms")
 	Channel.plotall()
 
-def disp_unconnected():
-	screen = pygame.display.set_mode((1024,768))
+def reset():
 	screen.fill(Colors.darkgrey)
+
+def disp_unconnected():
+	reset()
 	disp_default_chans(screen)
 
 def display():
-	screen.fill(Colors.darkgrey)
+	reset()
 	disp_default_chans(screen)
 	bx_nb_capture 	= Box((70, 25), (650, 20), Colors.white, "Nb of V capt.")
 	bx_wait_time  	= Box((70, 25), (750, 20), Colors.white, "Delay [ms]")

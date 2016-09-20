@@ -11,5 +11,5 @@ def main():
 	if busPirate.isConnected():
 		display.display()
 	else:
-		display.disp_unconnected()
+		display.display()
 main()

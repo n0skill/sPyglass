@@ -28,12 +28,36 @@ class AnalogCapture(object):
 		super(AnalogCapture, self).__init__()
 		self.arg = arg
 
+class BinaryMode():
+	#
+	commands = {
+	'SPI':	b'\x01',
+	'I2C':	b'\x02',
+	'UART':	b'\x03',
+	'1Wire':b'\x04',
+	'RAWW':	b'\x05',
+	'RST':	b'\x0F' # Reset and exit binary mode
+	}
+
+	def bitbang_mode():
+		conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)
+		for i in range(0,20):
+			conn.write(b'\x00')
+			if b'BBIO' in conn.read(10):
+				print('We are in bitbang mode')
+				return True
+		return False
+
+	def switch_mode(mode):
+		conn = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.01)
+		conn.write(BinaryMode.commands[mode])
+		if b'0x01' in conn.read(2):
+			print('Sucessfully switched mode')
+			return True
 
 def isConnected(port='/dev/ttyUSB0'):
 	try:
-		ser = serial.Serial(port, 115200, timeout=0.5)
-		command = 'i'
-		reply = send_cmd(port, command)
+		reply = send_cmd(port, 'i')
 		for line in reply.split('\r\n'):
 			print(line)
 			if line == "Bus Pirate v3a":
@@ -112,10 +136,11 @@ def export():
 	with open('./spyglass.txt', 'w') as f:
 		for data in list_capt:
 			f.write(str(data.values))
-def bitbang_mode():
+
+
+def binary_spi_mode():
 	conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)
-	for i in range(0,20):
-		conn.write(b'\x00')
-		if b'BBIO' in conn.read(10):
-			return True
-	return False
+	conn.write(b'\x01')
+	if b'SPI' in conn.read(2):
+		print('Switched to binary spi mode')
+		return True

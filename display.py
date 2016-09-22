@@ -117,15 +117,15 @@ class Channel:
 	def __init__(self, display, values, color, unit):
 		self.margin_l	= 100
 		self.length		= len(values)
-		self.height 	= 80
+		self.height 	= 50
 		self.color 		= color
 		self.unit 		= unit
 		self.values 	= values
 		self.display 	= display
 		self.width		= display.get_width()
-		self.surf = pygame.Surface((self.width, self.height))
-		self.surf.fill((25, 25, 25))
+		self.surf 		= pygame.Surface((self.width, self.height))
 		self.nb = Channel.nb
+		self.surf.fill((25, 25, 25))
 
 		# Scale x and y axis
 		self.x_scale = (self.width-self.margin_l)/self.length+1
@@ -159,8 +159,8 @@ class Channel:
 				timelbl 	= self.font.render(str(i), 1, self.color)
 				time_unit 	= self.font.render(self.unit, 1, self.color)
 				self.surf.blit(time_unit, (self.margin_l-25, -2))
-				self.surf.blit(timelbl, (i*scale_+self.margin_l-2, 6))
-				pygame.draw.line(scale_surface, self.color, (i*scale+self.margin_l, 0), (i*scale+self.margin_l, 4), 1)
+				self.surf.blit(timelbl, (i+self.margin_l-2, 6))
+				pygame.draw.line(scale_surface, self.color, (i*Channel.zoom_level+self.margin_l, 0), (i*Channel.zoom_level+self.margin_l, 4), 1)
 		self.surf.blit(scale_surface, (0,0))
 
 	def plot(self):
@@ -186,14 +186,13 @@ class Channel:
 
 class Button():
 	"""Class to create buttons for the GUI"""
-	def __init__(self, text, position):
+	def __init__(self, text, position, size=(70, 25)):
 		self.x_pos 	= position[0]
 		self.y_pos 	= position[1]
-		self.w		= 80
-		self.h		= 25
+		self.size 	= size
 		self.font	= pygame.font.SysFont('inconsolata', 20)
 		font = self.font.render(text, 1, Colors.black)
-		self.surface = pygame.Surface((self.w, self.h))
+		self.surface = pygame.Surface(self.size)
 		self.surface.fill(Colors.grey)
 		self.surface.blit(font, (0,0))
 		screen.blit(self.surface, position)
@@ -201,8 +200,8 @@ class Button():
 	def action(self, events, action, inputs=None):
 		x 	= self.x_pos
 		y 	= self.y_pos
-		w 	= self.w
-		h	= self.h
+		w 	= self.size[0]
+		h	= self.size[1]
 		for event in events:
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				evtpos = pygame.mouse.get_pos()
@@ -266,13 +265,20 @@ def display():
 	bx_nb_capture 	= Box((70, 25), (650, 20), Colors.white, "Nb of V capt.")
 	bx_wait_time  	= Box((70, 25), (750, 20), Colors.white, "Delay [ms]")
 	btn_capture   	= Button("Capture", (screen.get_width()-80, 20))
-	btn_export		= Button("Export", (30, 20))
+	btn_export		= Button("Export", (20, 20))
+	btn_binarymode  = Button("Binary", (120, 20))
+	btn_bin_spi  	= Button("SPI", (200, 20), (30, 25))
+	btn_bin_uart  	= Button("UART", (250, 20), (40, 25))
 	tb = Console((screen.get_width(), 350), (0, 400))
 	while True:
 		evts = pygame.event.get()
 		tb.action(evts)
 		bx_nb_capture.action(evts)
 		bx_wait_time.action(evts)
+
+		btn_binarymode.action(evts, busPirate.BinaryMode.bitbang_mode)
+		btn_bin_spi.action(evts, busPirate.BinaryMode.switch_mode, 'SPI')
+		btn_bin_uart.action(evts, busPirate.BinaryMode.switch_mode, 'UART')
 		btn_capture.action(evts, capture_and_plot, [bx_nb_capture.text, bx_wait_time.text])
 		btn_export.action(evts, busPirate.export, None)
 		screen.blit(tb.surface, tb.pos)

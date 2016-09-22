@@ -51,7 +51,7 @@ class BinaryMode():
 	def switch_mode(mode):
 		conn = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.01)
 		conn.write(BinaryMode.commands[mode])
-		if b'0x01' in conn.read(2):
+		if b'\x01' in conn.read(2):
 			print('Sucessfully switched mode')
 			return True
 

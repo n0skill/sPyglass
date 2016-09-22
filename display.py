@@ -269,6 +269,7 @@ def display():
 	btn_binarymode  = Button("Binary", (120, 20))
 	btn_bin_spi  	= Button("SPI", (200, 20), (30, 25))
 	btn_bin_uart  	= Button("UART", (250, 20), (40, 25))
+	btn_bin_i2c  	= Button("I²C", (300, 20), (30, 25))
 	tb = Console((screen.get_width(), 350), (0, 400))
 	while True:
 		evts = pygame.event.get()
@@ -276,9 +277,10 @@ def display():
 		bx_nb_capture.action(evts)
 		bx_wait_time.action(evts)
 
-		btn_binarymode.action(evts, busPirate.BinaryMode.bitbang_mode)
-		btn_bin_spi.action(evts, busPirate.BinaryMode.switch_mode, 'SPI')
-		btn_bin_uart.action(evts, busPirate.BinaryMode.switch_mode, 'UART')
+		btn_binarymode.action(evts, busPirate.BusPirate.bitbang_mode)
+		btn_bin_spi.action(evts, busPirate.BusPirate.switch_mode, 'SPI')
+		btn_bin_uart.action(evts, busPirate.BusPirate.switch_mode, 'UART')
+		btn_bin_i2c.action(evts, busPirate.BusPirate.switch_mode, 'I2C')
 		btn_capture.action(evts, capture_and_plot, [bx_nb_capture.text, bx_wait_time.text])
 		btn_export.action(evts, busPirate.export, None)
 		screen.blit(tb.surface, tb.pos)

@@ -28,19 +28,32 @@ class AnalogCapture(object):
 		super(AnalogCapture, self).__init__()
 		self.arg = arg
 
-class BinaryMode():
-	#
+class BusPirate():
+	# Flag to know current mode of the busPirate. False = CLI, True = Binary
+	mode_flag = False
+
 	commands = {
-	'SPI':	b'\x01',
-	'I2C':	b'\x02',
-	'UART':	b'\x03',
-	'1Wire':b'\x04',
-	'RAWW':	b'\x05',
-	'RST':	b'\x0F' # Reset and exit binary mode
+	 # Mode to switch to: (command to send, expected reply)
+	'SPI':	(b'\x01', b'SPI1'),
+	'I2C':	(b'\x02', b'I2C1'),
+	'UART':	(b'\x03', b'ART1'),
+	'1Wire':(b'\x04', b'1W01'),
+	'RAWW':	(b'\x05', b'RAW1'),
+	'RST':	(b'\x0F', b'\x01'), # Reset and exit binary mode
+	'BBNG': (b'\x00', b'BBIO')
 	}
+	def __init__(self):
+		self.mode = self.get_mode()
+
 
 	def bitbang_mode():
 		conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)
+		# Make sure we are not in a menu + reset
+		for i in range(0,10):
+			conn.write('\r'.encode())
+		conn.write('#'.encode())
+		conn.read(10) # Empty the buffer
+
 		for i in range(0,20):
 			conn.write(b'\x00')
 			if b'BBIO' in conn.read(10):
@@ -49,11 +62,18 @@ class BinaryMode():
 		return False
 
 	def switch_mode(mode):
+		# Make sure we are in the binary mode before sending command
+		BusPirate.bitbang_mode()
 		conn = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.01)
-		conn.write(BinaryMode.commands[mode])
-		if b'\x01' in conn.read(2):
-			print('Sucessfully switched mode')
+		conn.write(BusPirate.commands[mode][0])
+		if BusPirate.commands[mode][1] in conn.read(4):
+			print('Switched mode')
 			return True
+		return False
+
+	# Getters and setters
+	def get_mode(self):
+		pass
 
 def isConnected(port='/dev/ttyUSB0'):
 	try:

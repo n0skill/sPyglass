@@ -186,10 +186,12 @@ class Channel:
 
 class Button():
 	"""Class to create buttons for the GUI"""
-	def __init__(self, text, position, size=(70, 25)):
+	def __init__(self, text, position, func, args=None, size=(70, 25)):
 		self.x_pos 	= position[0]
 		self.y_pos 	= position[1]
 		self.size 	= size
+		self.func 	= func
+		self.args	= args
 		self.font	= pygame.font.SysFont('inconsolata', 20)
 		font = self.font.render(text, 1, Colors.black)
 		self.surface = pygame.Surface(self.size)
@@ -197,7 +199,7 @@ class Button():
 		self.surface.blit(font, (0,0))
 		screen.blit(self.surface, position)
 
-	def action(self, events, action, inputs=None):
+	def action(self, events, dynamic_args=None):
 		x 	= self.x_pos
 		y 	= self.y_pos
 		w 	= self.size[0]
@@ -206,11 +208,16 @@ class Button():
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				evtpos = pygame.mouse.get_pos()
 				if x+w > evtpos[0] > x and y+h > evtpos[1] > y:
-					if inputs == None:
-						action()
+					if self.args == None:
+						if dynamic_args==None:
+							self.func()
+						else:
+							self.func(dynamic_args)
 					else:
-						action(inputs)
-
+						self.func(self.args)
+	def all_btn_actions(events):
+		for btn in btn_lst:
+			btn.action()
 # TODO: put these in the Channel class. Not out of it.
 def zoomIn():
 	Channel.reset()
@@ -259,30 +266,32 @@ def disp_unconnected():
 	reset()
 	disp_default_chans(screen)
 
-def display():
+def get_events():
+	return pygame.event.get()
+
+def display(bp):
 	reset()
 	disp_default_chans(screen)
+	tb 				= Console((screen.get_width(), 350), (0, 400))
 	bx_nb_capture 	= Box((70, 25), (650, 20), Colors.white, "Nb of V capt.")
 	bx_wait_time  	= Box((70, 25), (750, 20), Colors.white, "Delay [ms]")
-	btn_capture   	= Button("Capture", (screen.get_width()-80, 20))
-	btn_export		= Button("Export", (20, 20))
-	btn_binarymode  = Button("Binary", (120, 20))
-	btn_bin_spi  	= Button("SPI", (200, 20), (30, 25))
-	btn_bin_uart  	= Button("UART", (250, 20), (40, 25))
-	btn_bin_i2c  	= Button("I²C", (300, 20), (30, 25))
-	tb = Console((screen.get_width(), 350), (0, 400))
+	btn_capture   	= Button("Capture", (screen.get_width()-80, 20), capture_and_plot)
+	btn_export		= Button("Export", 	(20, 20),  busPirate.export)
+	btn_binarymode  = Button("Binary", 	(120, 20), bp.bitbang_mode)
+	btn_bin_spi  	= Button("SPI",		(200, 20), bp.switch_mode, 'SPI', (30, 25))
+	btn_bin_uart  	= Button("UART",	(250, 20), bp.switch_mode, 'UART',(40, 25))
+	btn_bin_i2c  	= Button("I²C", 	(300, 20), bp.switch_mode, 'I2C', (30, 25))
 	while True:
-		evts = pygame.event.get()
+		evts = get_events()
 		tb.action(evts)
 		bx_nb_capture.action(evts)
 		bx_wait_time.action(evts)
-
-		btn_binarymode.action(evts, busPirate.BusPirate.bitbang_mode)
-		btn_bin_spi.action(evts, busPirate.BusPirate.switch_mode, 'SPI')
-		btn_bin_uart.action(evts, busPirate.BusPirate.switch_mode, 'UART')
-		btn_bin_i2c.action(evts, busPirate.BusPirate.switch_mode, 'I2C')
-		btn_capture.action(evts, capture_and_plot, [bx_nb_capture.text, bx_wait_time.text])
-		btn_export.action(evts, busPirate.export, None)
+		btn_binarymode.action(evts) # This calls self.aciton() not action()
+		btn_bin_spi.action(evts)
+		btn_bin_uart.action(evts)
+		btn_bin_i2c.action(evts)
+		btn_capture.action(evts, [bx_nb_capture.text, bx_wait_time.text])
+		btn_export.action(evts)
 		screen.blit(tb.surface, tb.pos)
 		mouse_action_trigger(evts, 4, zoomIn)
 		mouse_action_trigger(evts, 5, zoomOut)

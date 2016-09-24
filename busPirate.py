@@ -152,10 +152,3 @@ def export():
 	with open('./spyglass.txt', 'w') as f:
 		for data in list_capt:
 			f.write(str(data.values))
-
-def binary_spi_mode():
-	conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)
-	conn.write(b'\x01')
-	if b'SPI' in conn.read(2):
-		print('Switched to binary spi mode')
-		return True

@@ -30,8 +30,6 @@ class AnalogCapture(object):
 
 class BusPirate():
 	# Flag to know current mode of the busPirate. False = CLI, True = Binary
-	mode_flag = False
-
 	commands = {
 	 # Mode to switch to: (command to send, expected reply)
 	'SPI':	(b'\x01', b'SPI1'),
@@ -42,11 +40,10 @@ class BusPirate():
 	'RST':	(b'\x0F', b'\x01'), # Reset and exit binary mode
 	'BBNG': (b'\x00', b'BBIO')
 	}
-	def __init__(self):
-		self.mode = self.get_mode()
+	def __init__(self, port):
+		self.port 		= port
 
-
-	def bitbang_mode():
+	def bitbang_mode(self):
 		conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)
 		# Make sure we are not in a menu + reset
 		for i in range(0,10):
@@ -57,35 +54,34 @@ class BusPirate():
 		for i in range(0,20):
 			conn.write(b'\x00')
 			if b'BBIO' in conn.read(10):
-				print('We are in bitbang mode')
 				return True
 		return False
 
-	def switch_mode(mode):
+	def switch_mode(self, mode):
 		# Make sure we are in the binary mode before sending command
-		BusPirate.bitbang_mode()
+		self.bitbang_mode()
 		conn = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.01)
 		conn.write(BusPirate.commands[mode][0])
 		if BusPirate.commands[mode][1] in conn.read(4):
-			print('Switched mode')
+			self.mode = mode
+			print('Switched!')
 			return True
 		return False
 
 	# Getters and setters
 	def get_mode(self):
-		pass
+		print(self.mode)
 
-def isConnected(port='/dev/ttyUSB0'):
-	try:
-		reply = send_cmd(port, 'i')
-		for line in reply.split('\r\n'):
-			print(line)
-			if line == "Bus Pirate v3a":
-				print('okay')
-				return True
-	except serial.SerialException:
-		print('Nothing found on ', port)
-		return False
+	def isConnected(self):
+		try:
+			reply = send_cmd(self.port, 'i')
+			for line in reply.split('\r\n'):
+				print(line)
+				if line == "Bus Pirate v3a":
+					return True
+		except serial.SerialException:
+			print('Nothing found on  ', self.port)
+			return False
 
 def send_cmd(port, cmd):
 	print('Sending cmds: ' + str(cmd) + ' to ' + str(port))
@@ -156,7 +152,6 @@ def export():
 	with open('./spyglass.txt', 'w') as f:
 		for data in list_capt:
 			f.write(str(data.values))
-
 
 def binary_spi_mode():
 	conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)

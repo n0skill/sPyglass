@@ -136,7 +136,6 @@ class Channel:
 		self.font = pygame.font.Font(None, 16)
 		self.draw_scale()
 		self.draw_labels()
-		#pygame.display.update()
 		Channel.nb = Channel.nb+1
 		Channel.channels.append(self)
 	def draw_labels(self):
@@ -152,16 +151,17 @@ class Channel:
 		self.display.blit(self.surf, (0, self.nb*self.height+Channel.margin_top))
 	def draw_scale(self):
 		scale_surface = pygame.Surface((self.width, 5))
-		scale_surface.fill(Colors.grey)
-		pygame.draw.line(scale_surface, Colors.green, (self.margin_l, 3), (self.width, 3), 1)
+		scale_scale   = self.x_scale*Channel.zoom_level
+		pygame.draw.line(scale_surface, Colors.green, (0, 3), (self.width, 3), 1)
 		for i in range(0, self.length):
-			if i%10==0:
+			if i%5==0:
 				timelbl 	= self.font.render(str(i), 1, self.color)
 				time_unit 	= self.font.render(self.unit, 1, self.color)
 				self.surf.blit(time_unit, (self.margin_l-25, -2))
-				self.surf.blit(timelbl, (i+self.margin_l-2, 6))
-				pygame.draw.line(scale_surface, self.color, (i*Channel.zoom_level+self.margin_l, 0), (i*Channel.zoom_level+self.margin_l, 4), 1)
-		self.surf.blit(scale_surface, (0,0))
+				self.surf.blit(timelbl, (i*scale_scale+self.margin_l-2, 6))
+				dash_pos = i*scale_scale
+				pygame.draw.line(scale_surface, self.color, (dash_pos, 0), (dash_pos, 4), 1)
+		self.surf.blit(scale_surface, (self.margin_l,0))
 
 	def plot(self):
 		scaled_vals = []
@@ -220,17 +220,14 @@ class Button():
 			btn.action()
 # TODO: put these in the Channel class. Not out of it.
 def zoomIn():
-	Channel.reset()
 	Channel.zoom_level=Channel.zoom_level+0.3
-	for chan in Channel.channels:
-		chan.plot()
+	Channel.plotall()
 def zoomOut():
-	Channel.reset()
 	if Channel.zoom_level > 0.3:
 		Channel.zoom_level=Channel.zoom_level-0.3
-		for chan in Channel.channels:
-			chan.plot()
+		Channel.plotall()
 	else:
+		Channel.zoom_level=1
 		pass
 
 def mouse_action_trigger(events, mouse_btn_no, action=None):
@@ -241,8 +238,8 @@ def mouse_action_trigger(events, mouse_btn_no, action=None):
 				action()
 
 def disp_default_chans(screen):
-	Channel.reset()
 	''' Creates empty channels to display before any capture is made'''
+	Channel.reset()
 	Channel(screen, [(0,0),(0,0)], Colors.brown, 	"ms")
 	Channel(screen, [(0,0),(0,0)], Colors.red, 		"ms")
 	Channel(screen, [(0,0),(0,0)], Colors.yello, 	"ms")
@@ -270,7 +267,6 @@ def get_events():
 	return pygame.event.get()
 
 def display(bp):
-	reset()
 	disp_default_chans(screen)
 	tb 				= Console((screen.get_width(), 350), (0, 400))
 	bx_nb_capture 	= Box((70, 25), (650, 20), Colors.white, "Nb of V capt.")

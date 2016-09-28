@@ -41,9 +41,11 @@ class BusPirate():
 	'BBNG': (b'\x00', b'BBIO')
 	}
 	def __init__(self, port):
-		self.port 		= port
+		self.port 	= port
+		self.reset()
 
 	def bitbang_mode(self):
+		self.reset()
 		conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)
 		# Make sure we are not in a menu + reset
 		for i in range(0,10):
@@ -65,23 +67,32 @@ class BusPirate():
 		if BusPirate.commands[mode][1] in conn.read(4):
 			self.mode = mode
 			print('Switched!')
+			print(self.mode)
 			return True
 		return False
-
-	# Getters and setters
-	def get_mode(self):
-		print(self.mode)
 
 	def isConnected(self):
 		try:
 			reply = send_cmd(self.port, 'i')
+			if reply == None:
+				return None
 			for line in reply.split('\r\n'):
 				print(line)
 				if line == "Bus Pirate v3a":
 					return True
-		except serial.SerialException:
+		except serial.SerialException as e:
+			print('Error occurred: ', e)
 			print('Nothing found on  ', self.port)
 			return False
+
+	def reset(self):
+			conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)
+			# Make sure we are not in a menu + reset
+			for i in range(0,10):
+				conn.write('\r'.encode())
+			conn.write('#'.encode())
+			conn.read(10) # Empty the buffer
+
 
 def send_cmd(port, cmd):
 	print('Sending cmds: ' + str(cmd) + ' to ' + str(port))
@@ -100,10 +111,13 @@ def send_cmd(port, cmd):
 	except serial.SerialException as e:
 		if e.errno == 2:
 			print('Could not find device. Check spelling.')
+			return None
 		if e.errno == 16:
 			print('The device is busy. Stop other programs using it')
+			return None
 		else:
 			print(e)
+			return None
 
 def capture_voltage(pause_times, port='/dev/ttyUSB0', time=100):
 	cmd_mode = 'm'

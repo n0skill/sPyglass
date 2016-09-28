@@ -186,9 +186,11 @@ class Channel:
 
 class Button():
 	"""Class to create buttons for the GUI"""
+	btn_lst = []
 	def __init__(self, text, position, func, args=None, size=(70, 25)):
 		self.x_pos 	= position[0]
 		self.y_pos 	= position[1]
+		self.text 	= text
 		self.size 	= size
 		self.func 	= func
 		self.args	= args
@@ -198,7 +200,7 @@ class Button():
 		self.surface.fill(Colors.grey)
 		self.surface.blit(font, (0,0))
 		screen.blit(self.surface, position)
-
+		Button.btn_lst.append(self)
 	def action(self, events, dynamic_args=None):
 		x 	= self.x_pos
 		y 	= self.y_pos
@@ -237,13 +239,20 @@ def mouse_action_trigger(events, mouse_btn_no, action=None):
 			if evt.button == mouse_btn_no:
 				action()
 
-def disp_default_chans(screen):
+def not_connected():
+	surface = pygame.Surface((screen.get_width(), screen.get_height()))
+	surface.fill(Colors.darkgrey)
+	screen.blit(surface, (0,0))
+	pygame.display.update()
+
+def disp_default_chans():
 	''' Creates empty channels to display before any capture is made'''
 	Channel.reset()
 	Channel(screen, [(0,0),(0,0)], Colors.brown, 	"ms")
 	Channel(screen, [(0,0),(0,0)], Colors.red, 		"ms")
 	Channel(screen, [(0,0),(0,0)], Colors.yello, 	"ms")
 	Channel(screen, [(0,0),(0,0)], Colors.orang, 	"ms")
+	pygame.display.update()
 	print('Default channels displayed')
 
 def capture_and_plot(inputs):
@@ -267,7 +276,7 @@ def get_events():
 	return pygame.event.get()
 
 def display(bp):
-	disp_default_chans(screen)
+	disp_default_chans()
 	tb 				= Console((screen.get_width(), 350), (0, 400))
 	bx_nb_capture 	= Box((70, 25), (650, 20), Colors.white, "Nb of V capt.")
 	bx_wait_time  	= Box((70, 25), (750, 20), Colors.white, "Delay [ms]")
@@ -276,9 +285,12 @@ def display(bp):
 	btn_binarymode  = Button("Binary", 	(120, 20), bp.bitbang_mode)
 	btn_bin_spi  	= Button("SPI",		(200, 20), bp.switch_mode, 'SPI', (30, 25))
 	btn_bin_uart  	= Button("UART",	(250, 20), bp.switch_mode, 'UART',(40, 25))
-	btn_bin_i2c  	= Button("I²C", 	(300, 20), bp.switch_mode, 'I2C', (30, 25))
+	btn_bin_i2c  	= Button("i2C", 	(300, 20), bp.switch_mode, 'I2C', (30, 25))
 	while True:
 		evts = get_events()
+	#	for btn in Button.btn_lst:
+	#		if btn.text == bp.mode:
+	#			btn.color = Colors.red
 		tb.action(evts)
 		bx_nb_capture.action(evts)
 		bx_wait_time.action(evts)

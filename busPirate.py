@@ -89,7 +89,7 @@ class BusPirate():
 			conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)
 			# Make sure we are not in a menu + reset
 			for i in range(0,10):
-				conn.write('\r'.encode())
+				conn.write('\r\n'.encode())
 			conn.write('#'.encode())
 			conn.read(10) # Empty the buffer
 

@@ -256,8 +256,12 @@ def disp_default_chans():
 	print('Default channels displayed')
 
 def capture_and_plot(inputs):
+	nb_cap = int(inputs[0])
+	wait_c = int(inputs[1])
+	bp_obj = inputs[2]
 	channels = Channel.channels
 	Channel.reset()
+	capt = bp_obj.capture_voltage(wait_c, nb_cap)
 	capt = busPirate.capture_voltage(int(inputs[1]), '/dev/ttyUSB0',int(inputs[0]))
 	surf = pygame.Surface((screen.get_width(), 50))
 	for k, chan in enumerate(capt.channels):
@@ -282,26 +286,27 @@ def display(bp):
 	bx_wait_time  	= Box((70, 25), (750, 20), Colors.white, "Delay [ms]")
 	btn_capture   	= Button("Capture", (screen.get_width()-80, 20), capture_and_plot)
 	btn_export		= Button("Export", 	(20, 20),  busPirate.export)
-	btn_binarymode  = Button("Binary", 	(120, 20), bp.bitbang_mode)
+	btn_binarymode  = Button("Binary", 	(120, 20), bp.bitbang)
 	btn_bin_spi  	= Button("SPI",		(200, 20), bp.switch_mode, 'SPI', (30, 25))
 	btn_bin_uart  	= Button("UART",	(250, 20), bp.switch_mode, 'UART',(40, 25))
 	btn_bin_i2c  	= Button("i2C", 	(300, 20), bp.switch_mode, 'I2C', (30, 25))
 	while True:
-		evts = get_events()
-	#	for btn in Button.btn_lst:
-	#		if btn.text == bp.mode:
-	#			btn.color = Colors.red
-		tb.action(evts)
-		bx_nb_capture.action(evts)
-		bx_wait_time.action(evts)
-		btn_binarymode.action(evts) # This calls self.aciton() not action()
-		btn_bin_spi.action(evts)
-		btn_bin_uart.action(evts)
-		btn_bin_i2c.action(evts)
-		btn_capture.action(evts, [bx_nb_capture.text, bx_wait_time.text])
-		btn_export.action(evts)
-		screen.blit(tb.surface, tb.pos)
-		mouse_action_trigger(evts, 4, zoomIn)
-		mouse_action_trigger(evts, 5, zoomOut)
+		if bp.connected:
+			evts = get_events()
+			tb.action(evts)
+			bx_nb_capture.action(evts)
+			bx_wait_time.action(evts)
+			btn_binarymode.action(evts) # This calls self.aciton() not action()
+			btn_bin_spi.action(evts)
+			btn_bin_uart.action(evts)
+			btn_bin_i2c.action(evts)
+			btn_capture.action(evts, [bx_nb_capture.text, bx_wait_time.text, bp])
+			btn_export.action(evts)
+			screen.blit(tb.surface, tb.pos)
+			mouse_action_trigger(evts, 4, zoomIn)
+			mouse_action_trigger(evts, 5, zoomOut)
+		else:
+			print('No buspirate found. Check again')
+			bp.isConnected()
 		pygame.display.update()
 		time.sleep(0.01)

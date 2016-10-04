@@ -9,12 +9,12 @@ def main():
 			port = sys.argv[1]
 		else:
 			port = "/dev/ttyUSB0"
-
 		bp	= busPirate.BusPirate(port)
-		if bp.isConnected():
-			display.display(bp)
+		if bp == None:
+			print('Its a none, so it dosent exist')
 		else:
-			display.not_connected()
+			display.display(bp)
+
 	except KeyboardInterrupt:
 		print('Interrupted. Quit nicely pls. kthxbye')
 		bp.reset()

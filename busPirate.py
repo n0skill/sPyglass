@@ -16,83 +16,106 @@ class Captured:
 			self.channels['ch3'].append((k, float(val['YW'])))
 			self.channels['ch4'].append((k, float(val['RD'])))
 
-class DigitalCapture(object):
-	"""docstring for """
-	def __init__(self, arg):
-		super(DigitalCapture, self).__init__()
-		self.arg = arg
-
-class AnalogCapture(object):
-	"""docstring for AnalogCapture"""
-	def __init__(self, arg):
-		super(AnalogCapture, self).__init__()
-		self.arg = arg
-
 class BusPirate():
-	# Flag to know current mode of the busPirate. False = CLI, True = Binary
-	commands = {
-	 # Mode to switch to: (command to send, expected reply)
-	'SPI':	(b'\x01', b'SPI1'),
-	'I2C':	(b'\x02', b'I2C1'),
-	'UART':	(b'\x03', b'ART1'),
-	'1Wire':(b'\x04', b'1W01'),
-	'RAWW':	(b'\x05', b'RAW1'),
-	'RST':	(b'\x0F', b'\x01'), # Reset and exit binary mode
-	'BBNG': (b'\x00', b'BBIO')
-	}
 	def __init__(self, port):
+		# Check serial port before instancing new buspirate objects
 		self.port 	= port
-		self.reset()
+		try:
+			serial.Serial(port, 115200)
+			self.reset()
+			self.connected = True
+		except serial.SerialException as e:
+			self.connected = False
+			print('Could not find anything on port', port)
+			self = None
 
-	def bitbang_mode(self):
-		self.reset()
-		conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)
-		# Make sure we are not in a menu + reset
-		for i in range(0,10):
-			conn.write('\r'.encode())
-		conn.write('#'.encode())
-		conn.read(10) # Empty the buffer
+	def bitbang(self):
+		if obj_to_bang.connected:
+			obj_to_bang.reset()
+			for i in range(0,20):
+				obj_to_bang.write(b'\x00')
+			if b'BBIO' in obj_to_bang.read(10):
+				print('Switched to bitbang !')
 
-		for i in range(0,20):
-			conn.write(b'\x00')
-			if b'BBIO' in conn.read(10):
-				return True
-		return False
+	def SPI(self):
+		self.bitbang()
+		self.write(b'\x01')
+		self.read(2)
+	def UART(self):
+		self.bitbang()
+		self.write(b'\x02')
+		self.read(2)
+	def I2C(self):
+		self.bitbang()
+		self.write(b'\x03')
+		self.read(2)
 
 	def switch_mode(self, mode):
-		# Make sure we are in the binary mode before sending command
-		self.bitbang_mode()
-		conn = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.01)
-		conn.write(BusPirate.commands[mode][0])
-		if BusPirate.commands[mode][1] in conn.read(4):
-			self.mode = mode
-			print('Switched!')
-			print(self.mode)
-			return True
-		return False
+		if mode == "SPI":
+			self.SPI()
+			pass
+		elif mode == "UART":
+			self.UART()
+			pass
+		elif mode == "I2C":
+			self.I2C()
+		else:
+			self.bitbang()
 
 	def isConnected(self):
 		try:
 			reply = send_cmd(self.port, 'i')
 			if reply == None:
-				return None
-			for line in reply.split('\r\n'):
-				print(line)
-				if line == "Bus Pirate v3a":
-					return True
+				self.connected = False
+			else:
+				for line in reply.split('\r\n'):
+					if line == "Bus Pirate v3a":
+						self.connected = False
+				return self.connected
 		except serial.SerialException as e:
 			print('Error occurred: ', e)
 			print('Nothing found on  ', self.port)
-			return False
+			self.connected = False
+			return self.connected
+
+	def write(self, cmd):
+		if self.connected == True:
+			conn = serial.Serial(self.port, 112500, timeout=0.01)
+			conn.write(cmd)
+		else:
+			print('Bus Pirate probably is not connected')
+	def read(self, bytes):
+		if self.connected == True:
+			conn = serial.Serial(self.port, 112500, timeout=0.01)
+			conn.read(bytes)
+	def cli_read(self):
+		if self.connected == True:
+			reply = ""
+			conn = serial.Serial(self.port, 112500, timeout=0.01)
+			while conn.inWaiting() > 0:
+				reply += conn.read(256).decode("utf-8")
+			return reply
 
 	def reset(self):
-			conn = serial.Serial('/dev/ttyUSB0', 112500, timeout=0.01)
-			# Make sure we are not in a menu + reset
-			for i in range(0,10):
-				conn.write('\r\n'.encode())
-			conn.write('#'.encode())
-			conn.read(10) # Empty the buffer
-
+		for i in range(0,10):
+			self.write('\r'.encode())
+		self.write('#'.encode())
+	def capture_voltage(self, pause, nb):
+		vals = []
+		capt_v_cmd = '%'*pause
+		capt_v_cmd = 'v'+capt_v_cmd
+		n_cmds = int(nb*len(capt_v_cmd)/255)+1
+		self.write('m')
+		self.write('2')
+		self.write('W')
+		self.write('v')
+		self.write('%'*pause)
+		for i in range(0,n_cmds+1):
+			if i < n_cmds:
+				cmd_to_send = capt_v_cmd*(int(255/len(capt_v_cmd))+1)
+				self.write(cmd_to_send)
+				vals += self.cli_read()
+		return vals
 
 def send_cmd(port, cmd):
 	print('Sending cmds: ' + str(cmd) + ' to ' + str(port))
@@ -118,7 +141,6 @@ def send_cmd(port, cmd):
 		else:
 			print(e)
 			return None
-
 def capture_voltage(pause_times, port='/dev/ttyUSB0', time=100):
 	cmd_mode = 'm'
 	cmd_w	 = '2'

@@ -262,13 +262,12 @@ def capture_and_plot(inputs):
 	channels = Channel.channels
 	Channel.reset()
 	capt = bp_obj.capture_voltage(wait_c, nb_cap)
-	capt = busPirate.capture_voltage(int(inputs[1]), '/dev/ttyUSB0',int(inputs[0]))
 	surf = pygame.Surface((screen.get_width(), 50))
 	for k, chan in enumerate(capt.channels):
 		color = channels[k].color
 		Channel(screen, capt.channels[chan], color, "ms")
 	Channel.plotall()
-
+	pygame.display.update()
 def reset():
 	screen.fill(Colors.darkgrey)
 

@@ -20,22 +20,24 @@ class BusPirate():
 	def __init__(self, port):
 		# Check serial port before instancing new buspirate objects
 		self.port 	= port
+		self.connected = True
 		try:
 			serial.Serial(port, 115200)
 			self.reset()
-			self.connected = True
 		except serial.SerialException as e:
 			self.connected = False
 			print('Could not find anything on port', port)
-			self = None
 
 	def bitbang(self):
-		if obj_to_bang.connected:
-			obj_to_bang.reset()
+		if self.connected:
+			self.reset()
 			for i in range(0,20):
-				obj_to_bang.write(b'\x00')
-			if b'BBIO' in obj_to_bang.read(10):
-				print('Switched to bitbang !')
+				self.write(b'\x00')
+			vals = self.read(10)
+
+			if vals is not None:
+				if b'BBIO' in vals:
+					print('Switched to bitbang !')
 
 	def SPI(self):
 		self.bitbang()
@@ -88,34 +90,54 @@ class BusPirate():
 		if self.connected == True:
 			conn = serial.Serial(self.port, 112500, timeout=0.01)
 			conn.read(bytes)
-	def cli_read(self):
+	def cli_rw(self, cmd):
 		if self.connected == True:
 			reply = ""
+			cmd = cmd+'\n'
 			conn = serial.Serial(self.port, 112500, timeout=0.01)
+			time.sleep(0.02)
+			conn.write(cmd.encode())
+			time.sleep(0.05)
 			while conn.inWaiting() > 0:
 				reply += conn.read(256).decode("utf-8")
+				time.sleep(0.01)
 			return reply
 
 	def reset(self):
 		for i in range(0,10):
 			self.write('\r'.encode())
 		self.write('#'.encode())
+
 	def capture_voltage(self, pause, nb):
-		vals = []
-		capt_v_cmd = '%'*pause
-		capt_v_cmd = 'v'+capt_v_cmd
+		values = ""
+		capt_lst = []
+		results = {}
+
+		capt_v_cmd = 'v'
+		capt_v_cmd = capt_v_cmd+str('%'*pause)
+		self.cli_rw('m')
+		self.cli_rw('2')
+		self.cli_rw('W')
 		n_cmds = int(nb*len(capt_v_cmd)/255)+1
-		self.write('m')
-		self.write('2')
-		self.write('W')
-		self.write('v')
-		self.write('%'*pause)
-		for i in range(0,n_cmds+1):
+		for i in range(1,n_cmds+1):
 			if i < n_cmds:
 				cmd_to_send = capt_v_cmd*(int(255/len(capt_v_cmd))+1)
-				self.write(cmd_to_send)
-				vals += self.cli_read()
-		return vals
+				print(cmd_to_send)
+				values += self.cli_rw(cmd_to_send)
+			else:
+				cmd_to_send = capt_v_cmd*(nb%255)
+				values += self.cli_rw(cmd_to_send)
+
+		clean = re.findall('^(GND.+)$', values, re.MULTILINE)
+		for val in clean:
+			if val.endswith('L\t\r') or val.endswith('H\t\r'):
+				reg = re.findall('(\d+.\d+)', val)
+				results = {'BR': reg[0], 'RD': reg[1], 'OR': reg[2], 'YW':reg[3]}
+				capt_lst.append(results)
+		captured_vals = Captured(capt_lst)
+		list_capt.append(captured_vals)
+		print('expected values: ' + str(nb) + '. Got: ' + str(len(capt_lst)))
+		return captured_vals
 
 def send_cmd(port, cmd):
 	print('Sending cmds: ' + str(cmd) + ' to ' + str(port))
@@ -141,48 +163,6 @@ def send_cmd(port, cmd):
 		else:
 			print(e)
 			return None
-def capture_voltage(pause_times, port='/dev/ttyUSB0', time=100):
-	cmd_mode = 'm'
-	cmd_w	 = '2'
-	cmd_psu	 = 'W'
-	voltage_cmd = 'v'
-	pause_cmd	= '%'*int(pause_times)
-	cmd = (voltage_cmd+pause_cmd)
-	print(cmd)
-	capt_lst = []
-	results = {}
-	values = ""
-	try:
-		send_cmd(port, cmd_mode)
-		send_cmd(port, cmd_w)
-		send_cmd(port, cmd_psu)
-		n_cmds = int(time*len(cmd)/255)+1
-		# If the command is longer than what we can use, send multiple commands
-		for i in range(1, n_cmds+1):
-			# If it's not the last iteration
-			if i < n_cmds:
-				actual_cmd 	= cmd*(int(255/len(cmd))+1)
-				print(actual_cmd)
-				values += send_cmd(port, actual_cmd)
-			else:
-				# It's the last bit that is missing
-				print('Lastly: ')
-				actual_cmd = cmd*(time%255)
-				values += send_cmd(port, actual_cmd)
-
-		clean = re.findall('^(GND.+)$', values, re.MULTILINE)
-		for val in clean:
-			if val.endswith('L\t\r') or val.endswith('H\t\r'):
-				reg = re.findall('(\d+.\d+)', val)
-				results = {'BR': reg[0], 'RD': reg[1], 'OR': reg[2], 'YW':reg[3]}
-				capt_lst.append(results)
-		captured_vals = Captured(capt_lst)
-		list_capt.append(captured_vals)
-		print('expected values: ' + str(time) + '. Got: ' + str(len(capt_lst)))
-		return captured_vals
-	except Exception as e:
-		print(e)
-		return None
 
 def export():
 	with open('./spyglass.txt', 'w') as f:

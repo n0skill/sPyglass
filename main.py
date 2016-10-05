@@ -12,8 +12,8 @@ def main():
 		bp	= busPirate.BusPirate(port)
 		if bp == None:
 			print('Its a none, so it dosent exist')
-		else:
-			display.display(bp)
+		print(bp)
+		display.display(bp)
 
 	except KeyboardInterrupt:
 		print('Interrupted. Quit nicely pls. kthxbye')

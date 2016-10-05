@@ -286,9 +286,9 @@ def display(bp):
 	btn_capture   	= Button("Capture", (screen.get_width()-80, 20), capture_and_plot)
 	btn_export		= Button("Export", 	(20, 20),  busPirate.export)
 	btn_binarymode  = Button("Binary", 	(120, 20), bp.bitbang)
-	btn_bin_spi  	= Button("SPI",		(200, 20), bp.switch_mode, 'SPI', (30, 25))
-	btn_bin_uart  	= Button("UART",	(250, 20), bp.switch_mode, 'UART',(40, 25))
-	btn_bin_i2c  	= Button("i2C", 	(300, 20), bp.switch_mode, 'I2C', (30, 25))
+	btn_bin_spi  	= Button("SPI",		(200, 20), bp.SPI)
+	btn_bin_uart  	= Button("UART",	(250, 20), bp.UART)
+	btn_bin_i2c  	= Button("i2C", 	(300, 20), bp.I2C)
 	while True:
 		if bp.connected:
 			evts = get_events()

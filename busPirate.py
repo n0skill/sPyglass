@@ -52,18 +52,6 @@ class BusPirate():
 		self.write(b'\x03')
 		self.read(2)
 
-	def switch_mode(self, mode):
-		if mode == "SPI":
-			self.SPI()
-			pass
-		elif mode == "UART":
-			self.UART()
-			pass
-		elif mode == "I2C":
-			self.I2C()
-		else:
-			self.bitbang()
-
 	def isConnected(self):
 		try:
 			reply = send_cmd(self.port, 'i')

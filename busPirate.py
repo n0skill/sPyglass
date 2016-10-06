@@ -14,7 +14,7 @@ class Captured:
 			self.channels['ch1'].append((k, float(val['BR'])))
 			self.channels['ch2'].append((k, float(val['RD'])))
 			self.channels['ch3'].append((k, float(val['YW'])))
-			self.channels['ch4'].append((k, float(val['RD'])))
+			self.channels['ch4'].append((k, float(val['OR'])))
 
 class BusPirate():
 	def __init__(self, port):
@@ -100,7 +100,6 @@ class BusPirate():
 		values = ""
 		capt_lst = []
 		results = {}
-
 		capt_v_cmd = 'v'
 		capt_v_cmd = capt_v_cmd+str('%'*pause)
 		self.cli_rw('m')

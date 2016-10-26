@@ -1,5 +1,5 @@
-# TODO: move all communication handling in this file/class
 import serial
+from bp_SPI import SPI
 import time
 import re
 
@@ -17,44 +17,75 @@ class Captured:
 			self.channels['ch4'].append((k, float(val['OR'])))
 
 class BusPirate():
-	def __init__(self, port):
+	def __init__(self, port, baudrate):
 		# Check serial port before instancing new buspirate objects
-		self.port 	= port
-		self.connected = True
+		self.port 		= port
+		self.connected 	= True
+		self.mode 		= None
+		self.baudrate 	= baudrate
 		try:
-			serial.Serial(port, 115200)
 			self.reset()
 		except serial.SerialException as e:
 			self.connected = False
 			print('Could not find anything on port', port)
 
+	def open_connection(self):
+		return serial.Serial(self.port, self.baudrate)
+
 	def bitbang(self):
+		modes = {
+			# TODO: See if there are common command so that we can simply use
+			# an array (and the positions therein as the commands "ids" like
+			# pos 1 = read etc. instead of a hash table....
+			'UART': 	{'read': b'\x02', 'write': b'\x03', 'send': b'\x04'},
+			'1-Wire': 	{'read': b'\x03', 'write': b'\x04', 'send': b'\x05'},
+			'RAW': 		{'read': b'\x1A', 'write': b'\x1B', 'send': b'\x1C'}
+		}
+
+		# From the wiki
 		if self.connected:
-			self.reset()
-			for i in range(0,20):
-				self.write(b'\x00')
-			vals = self.read(10)
+			if self.mode is not 'BBIO1':
+				vals = self.write(b'\x00', 20, 5)
+				if vals is not None:
+					if b'BBIO1' in vals:
+						print('Switched to bitbang !')
+						self.mode = 'BBIO1'
+			else:
+				print('already in binary mode !')
+	# SPI
+	def enter_spi(self):
+		if self.mode is not 'BBIO1':
+			self.bitbang()
+		if SPI.enter_mode(self):
+			return True
+		else:
+			return False
 
-			if vals is not None:
-				if b'BBIO' in vals:
-					print('Switched to bitbang !')
+	def spi_sniff_csl(self):
+		SPI.sniff(self)
 
-	def SPI(self):
-		self.bitbang()
-		self.write(b'\x01')
-		self.read(2)
-	def UART(self):
-		self.bitbang()
-		self.write(b'\x02')
-		self.read(2)
-	def I2C(self):
-		self.bitbang()
-		self.write(b'\x03')
-		self.read(2)
+	def spi_sniff_csh(self):
+		print('call csi')
+		SPI.CS_high(self)
+		pass
+
+	def spi_transfer(self):
+		SPI.transfer(self, 0xFF)
+		pass
+
+	def spi_speed(self):
+		SPI.speed(self)
+		pass
+
+	def spi_write_read(self):
+		SPI.write_read(self)
+		pass
 
 	def isConnected(self):
 		try:
-			reply = send_cmd(self.port, 'i')
+			self.write('i')
+			reply = self.read(10)
+			print(reply, ' in isConnected')
 			if reply == None:
 				self.connected = False
 			else:
@@ -68,21 +99,23 @@ class BusPirate():
 			self.connected = False
 			return self.connected
 
-	def write(self, cmd):
+	def write(self, cmd, times=1, reply_length=1):
 		if self.connected == True:
-			conn = serial.Serial(self.port, 112500, timeout=0.01)
-			conn.write(cmd)
+			conn = serial.Serial(self.port, 112500)
+			for i in range(0, times):
+				conn.write(cmd)
+			return conn.read(reply_length)
 		else:
 			print('Bus Pirate probably is not connected')
 	def read(self, bytes):
 		if self.connected == True:
-			conn = serial.Serial(self.port, 112500, timeout=0.01)
+			conn = serial.Serial(self.port, self.baudrate, timeout=0.01)
 			conn.read(bytes)
 	def cli_rw(self, cmd):
 		if self.connected == True:
 			reply = ""
 			cmd = cmd+'\n'
-			conn = serial.Serial(self.port, 112500, timeout=0.01)
+			conn = serial.Serial(self.port, self.baudrate, timeout=0.01)
 			time.sleep(0.02)
 			conn.write(cmd.encode())
 			time.sleep(0.05)
@@ -94,7 +127,7 @@ class BusPirate():
 	def reset(self):
 		for i in range(0,10):
 			self.write('\r'.encode())
-		self.write('#'.encode())
+		self.write('#\r'.encode())
 
 	def capture_voltage(self, pause, nb):
 		values = ""

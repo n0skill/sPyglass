@@ -4,16 +4,18 @@ import display
 import re
 
 def main():
+	if len(sys.argv) > 1:
+		port = sys.argv[1]
+	else:
+		port = "/dev/ttyUSB0"
+
+	bp	= busPirate.BusPirate(port, 115200)
 	try:
-		if len(sys.argv) > 1:
-			port = sys.argv[1]
+		if bp.connected == True:
+			display.display(bp)
 		else:
-			port = "/dev/ttyUSB0"
-		bp	= busPirate.BusPirate(port)
-		if bp == None:
-			print('Its a none, so it dosent exist')
-		print(bp)
-		display.display(bp)
+			display.not_connected(bp)
+			print('Not connected')
 
 	except KeyboardInterrupt:
 		print('Interrupted. Quit nicely pls. kthxbye')

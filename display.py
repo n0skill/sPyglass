@@ -276,7 +276,7 @@ def display(bp):
 	btn_binarymode  = Button("Binary", 	(120, 20), bp.bitbang_mode)
 	btn_bin_spi  	= Button("SPI",		(200, 20), bp.switch_mode, 'SPI', (30, 25))
 	btn_bin_uart  	= Button("UART",	(250, 20), bp.switch_mode, 'UART',(40, 25))
-	btn_bin_i2c  	= Button("I²C", 	(300, 20), bp.switch_mode, 'I2C', (30, 25))
+	btn_bin_i2c  	= Button("I2C", 	(300, 20), bp.switch_mode, 'I2C', (30, 25))
 	while True:
 		evts = get_events()
 		tb.action(evts)
